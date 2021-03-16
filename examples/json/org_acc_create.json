@@ -1,0 +1,14 @@
+{
+    "data": {
+      "type": "accounts",
+      "id": "de37f385-1604-7c5b-a1e5-3173ea9cc2db",
+      "organisation_id": "ec0bd2f5-d6f7-54b3-b687-acd21cdde71b",
+      "attributes": {
+        "country": "GB",
+        "base_currency": "GBP",
+        "bank_id": "400300",
+        "bank_id_code": "GBDSC",
+        "bic": "NWBKGB22"
+      }
+    }
+  }
