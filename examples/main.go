@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cklewar/form3_clib/api/client"
+	"github.com/cklewar/form3_rest_api_client/api/client"
 )
 
 func main() {
