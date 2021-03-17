@@ -43,3 +43,4 @@ services:
   
   apiclient:
     image: golang:alpine
+    

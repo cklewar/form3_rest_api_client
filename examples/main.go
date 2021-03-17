@@ -12,15 +12,14 @@ import (
 
 func main() {
 
-	// Initialize client parameters
+	// Initialize api parameters
 	parameters := client.Parameters{
-		Host:     "192.168.2.50",
 		BaseURI:  "/v1/organisation/",
 		Resource: "accounts",
 	}
 
-	// Construct client
-	cStatus, c := client.NewClient(parameters)
+	// Construct client with default values
+	cStatus, c := client.NewClient("192.168.2.50", "", "", parameters)
 
 	if cStatus {
 		//status, body := c.Fetch("ad27e265-9604-4b4b-a0e5-3003ea9cc4db")

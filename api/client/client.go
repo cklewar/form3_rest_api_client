@@ -34,19 +34,19 @@ type Operations interface {
 
 // Parameters public structure
 type Parameters struct {
-	Timeout     time.Duration // HTTP wait timeout
-	Protocol    string        // HTTP or HTTPS
-	Host        string        // IP or DNS name of target host
-	Port        string        // TCP port number on target host
-	BaseURI     string        // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!
-	ContentType string        // Header content type e.g. application/vnd.api+json
-	Resource    string        // API resource endpoint e.g. account, claims
-	uri         string        // not public needs to be generated
+	Timeout     time.Duration // HTTP wait timeout. Default is time.Second * 10
+	BaseURI     string        // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!. Mandatrory field
+	ContentType string        // Header content type. Default is application/vnd.api+json
+	Resource    string        // API resource endpoint e.g. account, claims. Mandatory field
 }
 
 // Client is a struct which embeds Parameters
 type Client struct {
 	Parameters
+	protocol string // HTTP or HTTPS. Default is HTTP
+	host     string // IP or DNS name of target host. Mandatory field
+	port     string // TCP port number on target host. Default is 8080
+	uri      string // not public needs to be generated
 }
 
 // Create (POST) a new ressource to <request.uri>.
@@ -113,7 +113,7 @@ func (c *Client) Delete(id string, version int) int {
 // In case of error return <error> as status.
 func (c *Client) Fetch(id string) (int, []byte) {
 	var body []byte
-	res := c.Parameters.uri + id
+	res := c.uri + id
 	fmt.Printf("Fetching from URI <%s>\n", res)
 	req, err := http.NewRequest(http.MethodGet, res, nil)
 
@@ -190,47 +190,50 @@ func (c *Client) GetObjVersion(input []byte) int {
 //
 // Default value methods start
 //
-func (o *Parameters) contentTypeBase() string {
-	base := o.ContentType
-	if o.ContentType == "" {
+func (p *Parameters) contentTypeBase() string {
+	base := p.ContentType
+	if p.ContentType == "" {
 		base = defaultContentType
 	}
 	return base
 }
 
-func (o *Parameters) timeoutBase() time.Duration {
-	base := o.Timeout
-	if o.Timeout == 0 {
+func (p *Parameters) timeoutBase() time.Duration {
+	base := p.Timeout
+	if p.Timeout == 0 {
 		base = defaultTimeout
 	}
 	return base
 }
 
-func (o *Parameters) protocolBase() string {
-	base := o.Protocol
-	if o.Protocol == "" {
-		base = defaultProtocol
+func (c *Client) protocolBase(protocol string) string {
+	if protocol == "" {
+		return defaultProtocol
 	}
-	return base
+	return protocol
 }
 
-func (o *Parameters) portBase() string {
-	base := o.Port
-	if o.Port == "" {
-		base = defaultPort
+func (c *Client) portBase(port string) string {
+	if port == "" {
+		return defaultPort
 	}
-	return base
+	return port
 }
 
-// NewClient constructor for new client request with default values
-func NewClient(o Parameters) (bool, *Client) {
-
+// NewClient constructor with default values check
+func NewClient(host string, port string, protocol string, p Parameters) (bool, *Client) {
 	var c Client
-	c.Parameters = o
 
-	if c.Host == "" {
+	if host == "" {
 		log.Fatal("Host parameter not set")
 		return false, &c
+	}
+
+	c = Client{
+		host:       host,
+		port:       c.portBase(port),
+		protocol:   c.protocolBase(protocol),
+		Parameters: p,
 	}
 
 	if c.BaseURI == "" {
@@ -242,12 +245,12 @@ func NewClient(o Parameters) (bool, *Client) {
 		log.Fatal("Resource parameter not set")
 		return false, &c
 	}
-	// Check for default values
-	c.Timeout = o.timeoutBase()
-	c.Protocol = o.protocolBase()
-	c.Port = o.portBase()
-	c.ContentType = o.contentTypeBase()
-	c.uri = c.Protocol + "://" + c.Host + ":" + c.Port + c.BaseURI + c.Resource + "/"
+	// Check for setting parameters default value
+	c.Timeout = p.timeoutBase()
+	c.ContentType = p.contentTypeBase()
+
+	//Set final uri connect string
+	c.uri = c.protocol + "://" + c.host + ":" + c.port + c.BaseURI + c.Resource + "/"
 
 	return true, &c
 }
