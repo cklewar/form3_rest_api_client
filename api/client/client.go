@@ -136,14 +136,14 @@ func (c *Client) Fetch(id string) ([]byte, error) {
 		return nil, err
 	}
 
-	return body, fmt.Errorf("%i", resp.StatusCode)
+	return body, fmt.Errorf("%d", resp.StatusCode)
 }
 
 // GetObjID is a support method extracting <id> out of JSON data
 // GetObjID input parameter is byte array data from API response
 // Method handels byte array data as unstructured data by leveraging generic interface map
 // Method returns id as string value. In case of error empty string returned
-func (c *Client) GetObjID(input []byte) string {
+func (c *Client) GetObjID(input []byte) (string, error) {
 	var id string
 	// Declared array map of string with empty interface (unstructured input data)
 	// which will hold the value of the parsed json. Parsing embedded object <id> in JSON and return.
@@ -152,20 +152,20 @@ func (c *Client) GetObjID(input []byte) string {
 
 	if err != nil {
 		log.Fatal(err)
-		return id
+		return id, err
 	}
 
 	raw = raw["data"].(map[string]interface{})
 	id = raw["id"].(string)
 
-	return id
+	return id, nil
 }
 
 // GetObjVersion is a support method extracting <version> out of JSON data
 // GetObjVersion input parameter is byte array data from API response
 // Method handels byte array data as unstructured data by leveraging generic interface map
 // Method returns version as integer value. In case of error <error> returned
-func (c *Client) GetObjVersion(input []byte) int {
+func (c *Client) GetObjVersion(input []byte) (int, error) {
 	// Declared array map of string with empty interface (unstructured input data)
 	// which will hold the value of the parsed json. Parse embedded object <version> in JSON and return.
 	var raw map[string]interface{}
@@ -173,7 +173,7 @@ func (c *Client) GetObjVersion(input []byte) int {
 
 	if err != nil {
 		log.Fatal(err)
-		return error
+		return -1, err
 	}
 
 	raw = raw["data"].(map[string]interface{})
@@ -181,7 +181,7 @@ func (c *Client) GetObjVersion(input []byte) int {
 	// Investigate why is value mapped as float when using empty interface?
 	version := int(raw["version"].(float64))
 
-	return version
+	return version, nil
 }
 
 //
@@ -250,11 +250,11 @@ func NewClient(host string, port string, protocol string, p Parameters) (*Client
 }
 
 // JSONPrettyPrint prints JSON data in a more readable way on terminal.
-func JSONPrettyPrint(body []byte) string {
+func JSONPrettyPrint(body []byte) (string, error) {
 	dst := &bytes.Buffer{}
 
 	if err := json.Indent(dst, body, "", "  "); err != nil {
-		log.Fatal(err)
+		return "", err
 	}
-	return dst.String()
+	return dst.String(), nil
 }
