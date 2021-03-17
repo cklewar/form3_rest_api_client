@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,9 +11,6 @@ import (
 	"strconv"
 	"time"
 )
-
-// Return error state value
-const error = -1
 
 // Version is the current library's version: sent with User-Agent
 const Version = "0.1"
@@ -24,6 +22,9 @@ const (
 	defaultPort        = "8080"
 	defaultContentType = "application/vnd.api+json"
 )
+
+// ErrParamNotSet is ...
+var ErrParamNotSet = errors.New("parameter not set")
 
 // Operations defined in public interface
 type Operations interface {
@@ -51,16 +52,15 @@ type Client struct {
 
 // Create (POST) a new ressource to <request.uri>.
 // Return tuple(<StatusCode>, <response Body>).
-// In case of error return <error> as status.
-func (c *Client) Create(input []byte) (int, []byte) {
+// Return error
+func (c *Client) Create(input []byte) ([]byte, error) {
 	var body []byte
 
 	fmt.Printf("Creating new resource at URI <%s>\n", c.uri)
 	req, err := http.NewRequest(http.MethodPost, c.uri, bytes.NewBuffer(input))
 
 	if err != nil {
-		log.Fatal("Error reading request. ", err)
-		return error, body
+		return nil, err
 	}
 
 	req.Header.Add("Content-type", c.ContentType)
@@ -68,31 +68,28 @@ func (c *Client) Create(input []byte) (int, []byte) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		log.Fatal("Error reading response. ", err)
-		return error, body
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err = ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Fatal("Error reading body. ", err)
-		return error, body
+		return nil, err
 	}
 
-	return resp.StatusCode, body
+	return body, nil
 }
 
 // Delete a resource by <id> and return StatusCode.
 // <StatusCode> code in case of error < 0
-func (c *Client) Delete(id string, version int) int {
+func (c *Client) Delete(id string, version int) (int, error) {
 	res := c.uri + id + "?version=" + strconv.Itoa(version)
 	fmt.Printf("Deleting resource at URI <%s>\n", res)
 	req, err := http.NewRequest(http.MethodDelete, res, nil)
 
 	if err != nil {
-		log.Fatal("Error reading request. ", err)
-		return error
+		return -1, err
 	}
 
 	req.Header.Add("Content-type", c.ContentType)
@@ -100,18 +97,20 @@ func (c *Client) Delete(id string, version int) int {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		log.Fatal("Error reading response. ", err)
-		return error
+		return -1, err
 	}
 	defer resp.Body.Close()
 
-	return resp.StatusCode
+	return resp.StatusCode, nil
 }
+
+// StatusCode is ...
+type StatusCode error
 
 // Fetch (GET) data from API. Parameter is a resource's <id>.
 // Return tuple(<StatusCode>, <response Body>).
 // In case of error return <error> as status.
-func (c *Client) Fetch(id string) (int, []byte) {
+func (c *Client) Fetch(id string) ([]byte, error) {
 	var body []byte
 	res := c.uri + id
 	fmt.Printf("Fetching from URI <%s>\n", res)
@@ -119,7 +118,7 @@ func (c *Client) Fetch(id string) (int, []byte) {
 
 	if err != nil {
 		log.Fatal("Error reading request. ", err)
-		return error, body
+		return nil, err
 	}
 
 	req.Header.Add("Content-type", c.ContentType)
@@ -127,19 +126,17 @@ func (c *Client) Fetch(id string) (int, []byte) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		log.Fatal("Error reading response. ", err)
-		return error, body
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err = ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		log.Fatal("Error reading body. ", err)
-		return error, body
+		return nil, err
 	}
 
-	return resp.StatusCode, body
+	return body, fmt.Errorf("%i", resp.StatusCode)
 }
 
 // GetObjID is a support method extracting <id> out of JSON data
@@ -221,12 +218,11 @@ func (c *Client) portBase(port string) string {
 }
 
 // NewClient constructor with default values check
-func NewClient(host string, port string, protocol string, p Parameters) (bool, *Client) {
+func NewClient(host string, port string, protocol string, p Parameters) (*Client, error) {
 	var c Client
 
 	if host == "" {
-		log.Fatal("Host parameter not set")
-		return false, &c
+		return &c, fmt.Errorf("%s %w", "Host", ErrParamNotSet)
 	}
 
 	c = Client{
@@ -237,13 +233,11 @@ func NewClient(host string, port string, protocol string, p Parameters) (bool, *
 	}
 
 	if c.BaseURI == "" {
-		log.Fatal("BaseURI parameter not set")
-		return false, &c
+		return &c, fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
 	}
 
 	if c.Resource == "" {
-		log.Fatal("Resource parameter not set")
-		return false, &c
+		return &c, fmt.Errorf("%q: %w", "Resource", ErrParamNotSet)
 	}
 	// Check for setting parameters default value
 	c.Timeout = p.timeoutBase()
@@ -252,7 +246,7 @@ func NewClient(host string, port string, protocol string, p Parameters) (bool, *
 	//Set final uri connect string
 	c.uri = c.protocol + "://" + c.host + ":" + c.port + c.BaseURI + c.Resource + "/"
 
-	return true, &c
+	return &c, nil
 }
 
 // JSONPrettyPrint prints JSON data in a more readable way on terminal.
