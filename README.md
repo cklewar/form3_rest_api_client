@@ -131,10 +131,11 @@ To create a new client one can use __NewClient()__ function.
 * Function will take __Parameters__ struct to initialize "variable" data. 
 
 ```go
-func NewClient(host string, port string, protocol string, p Parameters) (APIInterface, error)
+func NewClient(host string, port string, protocol string, p Parameters) (*Client, error){}
 ```
 
-__NewClient__ function returns initialized __APIInterface__ and __error__. 
+__NewClient__ function returns initialized __Client__ and __error__. 
+__Client__ must implement __APIInterface__.
 
 ## Operation Methods
 

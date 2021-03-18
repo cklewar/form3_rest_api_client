@@ -201,12 +201,7 @@ func (c *Client) portBase(port string) string {
 
 // NewClient constructor with default values check
 func NewClient(host string, port string, protocol string, p Parameters) (*Client, error) {
-	//var api APIInterface
 	var client Client
-	//api = &client
-	//abc := api.(*Client)
-
-	// abc := &client
 
 	if host == "" {
 		return &client, fmt.Errorf("%s %w", "Host", ErrParamNotSet)
@@ -226,6 +221,7 @@ func NewClient(host string, port string, protocol string, p Parameters) (*Client
 	if client.Resource == "" {
 		return &client, fmt.Errorf("%q: %w", "Resource", ErrParamNotSet)
 	}
+
 	// Check for setting parameters default value
 	client.Timeout = p.timeoutBase()
 	client.ContentType = p.contentTypeBase()
