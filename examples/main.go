@@ -49,13 +49,13 @@ func main() {
 	fmt.Println(data)
 
 	id, _ := client.GetObjID(createResp.Body)
-	version, _ := client.GetObjVersion(createResp.Body)
 	fetchResp, err := c.Fetch(id)
 	fmt.Println("Error: ", err)
 	fmt.Println("ResponseCode: ", fetchResp.Code)
 	data, err = client.JSONPrettyPrint(fetchResp.Body)
 	fmt.Println(data)
 
+	version, _ := client.GetObjVersion(createResp.Body)
 	deleteResp, err := c.Delete(id, version)
 	fmt.Println("Error: ", err)
 	fmt.Println("ResponseCode: ", deleteResp.Code)

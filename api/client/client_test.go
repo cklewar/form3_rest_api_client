@@ -1,6 +1,9 @@
 package client
 
 import (
+	"io/ioutil"
+	"net/http"
+	"path/filepath"
 	"testing"
 )
 
@@ -42,9 +45,95 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
-//func TestFetch(t *testing.T) {
-//	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
-//}
+func TestCreate(t *testing.T) {
+	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	path := filepath.Join("../../examples/json/org_acc_create.json")
+	createInputData, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		t.Errorf("Error loading input data %v", err)
+	}
+
+	createResp, err := c.Create(createInputData)
+
+	if err != nil {
+		t.Errorf("Error creating data %v", err)
+	}
+
+	if createResp.Code != http.StatusCreated {
+		t.Errorf("Error creating data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
+	}
+
+	id, _ := GetObjID(createResp.Body)
+	version, _ := GetObjVersion(createResp.Body)
+	deleteResp, err := c.Delete(id, version)
+
+	if deleteResp.Code != http.StatusNoContent {
+		t.Errorf("Error deleting data. Got response code %v expected %v", createResp.Code, http.StatusNoContent)
+	}
+}
+
+func TestFetch(t *testing.T) {
+	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	path := filepath.Join("../../examples/json/org_acc_create.json")
+	createInputData, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		t.Errorf("Error loading input data %v", err)
+	}
+
+	createResp, err := c.Create(createInputData)
+
+	if err != nil {
+		t.Errorf("Error creating data %v", err)
+	}
+
+	if createResp.Code != http.StatusCreated {
+		t.Errorf("Error creating data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
+	}
+
+	id, _ := GetObjID(createResp.Body)
+	fetchResp, err := c.Fetch(id)
+
+	if fetchResp.Code != http.StatusOK {
+		t.Errorf("Error fetching data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
+	}
+
+	version, _ := GetObjVersion(createResp.Body)
+	deleteResp, err := c.Delete(id, version)
+
+	if deleteResp.Code != http.StatusNoContent {
+		t.Errorf("Error deleting data. Got response code %v expected %v", createResp.Code, http.StatusNoContent)
+	}
+}
+
+func TestDelete(t *testing.T) {
+	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	path := filepath.Join("../../examples/json/org_acc_create.json")
+	createInputData, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		t.Errorf("Error loading input data %v", err)
+	}
+
+	createResp, err := c.Create(createInputData)
+
+	if err != nil {
+		t.Errorf("Error creating data %v", err)
+	}
+
+	if createResp.Code != http.StatusCreated {
+		t.Errorf("Error creating data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
+	}
+
+	id, _ := GetObjID(createResp.Body)
+	version, _ := GetObjVersion(createResp.Body)
+	deleteResp, err := c.Delete(id, version)
+
+	if deleteResp.Code != http.StatusNoContent {
+		t.Errorf("Error deleting data. Got response code %v expected %v", createResp.Code, http.StatusNoContent)
+	}
+}
 
 func TestContentTypeBase(t *testing.T) {
 	// Construct client with default values
