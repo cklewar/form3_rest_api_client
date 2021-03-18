@@ -35,7 +35,7 @@ following higher level technical descisions have been made:
       * introduces backwards compatability 
       * introduces versioning support
 * Simplicity
-  * Client library should be simple and consice. To achive this cleint library 
+  * Client library should be simple and consice. To achive this client library 
     * implementes proper functions and methods to abstract complexity
     * provides clean return value structure 
     * provides the possibility to build structured data out of given response data
@@ -53,7 +53,7 @@ golang.org/x/tools v0.1.0 // indirect
 # Implementation
 
 ## APIInterface
-All operations are defined in __APIInterface__ interface. __APIInterface_ type defines common method sets. Type __Client__ therefore, is said to implement __APIInterface__ interface by implementing __APIInterface__ methods. In that light, __APIInterface__ interface enables us to compose custom types that have a common behavior.
+Common operations regarding Form3 REST API are defined in __APIInterface__ interface. Type __Client__ therefore, is said to implement __APIInterface__ interface by implementing __APIInterface__ methods. In that light, __APIInterface__ interface enables us to compose custom types that have a common behavior.
 
 ```go
 // APIInterface is a public interface
@@ -65,7 +65,7 @@ type APIInterface interface {
 ```
 
 ## Parameters 
-Parameters are implemented as struct. Parameters struct defines mandatory fields to be used to generate URI for later use. Parameters struct and it's fields are kept public except __uri__ field which needs to be generated out of other field data. __uri__ is the final string used to connect to REST endpoint. 
+Parameters are implemented as struct. Parameters struct defines mandatory fields to be used to generate URI for later use. Parameters struct and it's fields are kept public to allow later change of field values. 
 
 ```go
 type Parameters struct {
@@ -77,12 +77,12 @@ type Parameters struct {
 ```
 
 ### Fields
-- Timeout defines HTTP wait timeout for ```http.Client{}```
+- __Timeout__ defines HTTP wait timeout for ```http.Client{}```
+-	__BaseURI__ defines base URI e.g. __/v1/organisation/__ or __/v1/transaction/payments__
+-	__ContentType__ defines request header content type e.g. __application/vnd.api+json__
+-	__Resource__ defines API resource endpoint e.g. __account__, __claims__
 
--	BaseURI defines base URI e.g. __/v1/organisation/__ or __/v1/transaction/payments__
--	ContentType defines request header content type e.g. __application/vnd.api+json__
--	Resource defines API resource endpoint e.g. __account__, __claims__
--	uri defines final uri connection string. Intentionally not public needs to be generated
+__BaseURI__ and __Resource__ are mandatory fields and do not provide default values.
 
 ## Client API
 Client API is implemented as struct embedding unnamed __Parameters__ struct. API client can be created using __NewClient()__ function. 
@@ -102,6 +102,7 @@ type Client struct {
 - __protocol__ defines protocol schema e.g. http or https        
 -	__host__ defines target IP or DNS name. This is the API server address
 -	__port__ defines targets TCP port number. This is the API service listening port
+-	__uri__ defines final uri connection string. Intentionally not public needs to be generated
 
 Client struct implements __Operations__ interface.
 
@@ -126,7 +127,7 @@ To create a new client one can use __NewClient()__ function.
 
 * Function will take host, port and protocol
   * host is a mandatory field
-  * port and protocol fields can be initilased with default values
+  * port and protocol fields can be initialized with default values
 * Function will take __Parameters__ struct to initialize "variable" data. 
 
 ```go
@@ -144,8 +145,8 @@ Create new resource with __input__ data on REST endpoint.
 func (c *Client) Create(input []byte) (Response, error) {}
 ```
 #### Return values
-__int__: Integer < 0 if error occured or HTTP status code e.g. 404, 201  
-__[]byte__: API server response body
+__Response__: Response struct
+__error__: error
 
 
 ### Delete
@@ -164,12 +165,11 @@ func (c *Client) Fetch(id string) (Response, error) {}
 ```
 
 #### Return values
-__int__: Integer < 0 if error occured or HTTP status code e.g. 404, 201  
-__[]byte__: API server response body
+__Response__: Response struct
+__error__: error
 
 
 # Usage
-
 ## Import client library
 
 ```go
@@ -181,7 +181,6 @@ __[]byte__: API server response body
 ```go
 // Initialize API client parameters
 parameters := api.Parameters{
-	Host:     "192.168.2.50",
 	BaseURI:  "/v1/organisation/",
 	Resource: "accounts",
 }
