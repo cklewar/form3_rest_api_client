@@ -3,6 +3,13 @@ Christian Klewar
 
 Go language experience is entry level / novice
 
+# Description
+Simple and concise REST API client library to interact with Form3 REST API written in Go and suitable for use in another software project. Current supported operations are:
+
+* Create (POST)
+* Fetch (GET)
+* Delete (DELETE)
+
 # Technical decisions
 This chapter describes the technical decisions which have been made regarding client API integration.
 Given the task client API should be
@@ -33,13 +40,6 @@ following higher level technical descisions have been made:
     * provides clean return value structure 
     * provides the possibility to build structured data out of given response data
 
-# Description
-Simple and concise REST API client library to interact with Form3 REST API written in Go and suitable for use in another software project. Current supported operations are:
-
-* Create (POST)
-* Fetch (GET)
-* Delete (DELETE)
-
 # Requirements
 
 ```go
@@ -52,8 +52,8 @@ golang.org/x/tools v0.1.0 // indirect
 
 # Implementation
 
-## Operations
-Operations are defined in __Operations__ interface. __Operations__ type define common method sets. Type __Parameters__ therefore, is said to implement __Operations__ interface by implementing its methods. In that light, __Operations__ interface enable us compose custom types that have a common behavior.
+## APIInterface
+All operations are defined in __APIInterface__ interface. __APIInterface_ type defines common method sets. Type __Client__ therefore, is said to implement __APIInterface__ interface by implementing __APIInterface__ methods. In that light, __APIInterface__ interface enables us to compose custom types that have a common behavior.
 
 ```go
 // APIInterface is a public interface
@@ -99,14 +99,14 @@ type Client struct {
 ```
 
 ### Fields
-- Protocol defines protocol schema e.g. http or https        
--	Host defines target IP or DNS name. This is the API server address
--	Port defines targets TCP port number. This is the API service listening port
+- __protocol__ defines protocol schema e.g. http or https        
+-	__host__ defines target IP or DNS name. This is the API server address
+-	__port__ defines targets TCP port number. This is the API service listening port
 
 Client struct implements __Operations__ interface.
 
 ## Response
-Response is used to return API server body data and according http response code
+Response is used to return API server body data and HTTP response code
 
 ```go
 // Response is used to return API server body data and according http response code
@@ -116,14 +116,24 @@ type Response struct {
 }
 ```
 
+### Fields
+- __Body__ stores API server repsonse body data e.g. json data
+- __Code__ stores API server repsonse code        
+
+
 ## Client API Constructor
-To create a REST API client one can use __NewClient()__ function. Client constructor will take __Parameters__ struct to initialize API client. 
+To create a new client one can use __NewClient()__ function. 
+
+* Function will take host, port and protocol
+  * host is a mandatory field
+  * port and protocol fields can be initilased with default values
+* Function will take __Parameters__ struct to initialize "variable" data. 
 
 ```go
 func NewClient(host string, port string, protocol string, p Parameters) (APIInterface, error)
 ```
 
-__NewClient__ function returns initialized __APIInterface__ and error. 
+__NewClient__ function returns initialized __APIInterface__ and __error__. 
 
 ## Operation Methods
 
