@@ -64,6 +64,9 @@ func main() {
 		BaseURI:  "/v2/organisation/",
 		Resource: "accounts",
 	}
-	//abc := c.(*client.Client)
-	//fmt.Println(abc.ContentType)
+
+	c.Parameters = parameters
+	c.ContentType = ""
+	c.Resource = ""
+	c.BaseURI = ""
 }
