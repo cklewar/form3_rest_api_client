@@ -439,9 +439,9 @@ Unit test coverage is not complete. Approach is to catch as many use cases / cor
 
 Run unit tests with: 
 
-´´´bash
+```bash
 go test -v ./api/client/ -coverprofile cover.out
-´´´
+```
 
 ## Linter and Formatter
 * __golint__ used as linter and analyzes source code to flag programming errors, bugs, stylistic errors, and suspicious constructs.
