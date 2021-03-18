@@ -7,6 +7,8 @@ import (
 	"testing"
 )
 
+const apiHost = "accountapi"
+
 /*func TestTableNewClient(t *testing.T) {
 
 	var tables = []Parameters{
@@ -46,7 +48,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	c, _ := NewClient(apiHost, "", "", defaultParams)
 	path := filepath.Join("../../examples/json/org_acc_create.json")
 	createInputData, err := ioutil.ReadFile(path)
 
@@ -74,7 +76,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestFetch(t *testing.T) {
-	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	c, _ := NewClient(apiHost, "", "", defaultParams)
 	path := filepath.Join("../../examples/json/org_acc_create.json")
 	createInputData, err := ioutil.ReadFile(path)
 
@@ -108,7 +110,7 @@ func TestFetch(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	c, _ := NewClient(apiHost, "", "", defaultParams)
 	path := filepath.Join("../../examples/json/org_acc_create.json")
 	createInputData, err := ioutil.ReadFile(path)
 
@@ -137,7 +139,7 @@ func TestDelete(t *testing.T) {
 
 func TestContentTypeBase(t *testing.T) {
 	// Construct client with default values
-	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	c, _ := NewClient(apiHost, "", "", defaultParams)
 
 	if c.ContentType != defaultContentType {
 		t.Errorf("Wrong result. Got %s but wanted %s", c.ContentType, defaultContentType)
@@ -146,7 +148,7 @@ func TestContentTypeBase(t *testing.T) {
 
 func TestTimeoutBase(t *testing.T) {
 	// Construct client with default values
-	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	c, _ := NewClient(apiHost, "", "", defaultParams)
 
 	if c.Timeout != defaultTimeout {
 		t.Errorf("Wrong result. Got %s but wanted %s", c.Timeout, defaultTimeout)
@@ -155,7 +157,7 @@ func TestTimeoutBase(t *testing.T) {
 
 func TestPortBase(t *testing.T) {
 	// Construct client with default values
-	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	c, _ := NewClient(apiHost, "", "", defaultParams)
 
 	var port string = c.portBase("")
 	if port != defaultPort {
@@ -165,7 +167,7 @@ func TestPortBase(t *testing.T) {
 
 func TestProtocolBase(t *testing.T) {
 	// Construct client with default values
-	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+	c, _ := NewClient(apiHost, "", "", defaultParams)
 
 	var protocol string = c.protocolBase("")
 	if protocol != defaultProtocol {
