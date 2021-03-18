@@ -20,9 +20,10 @@
       - [Return values](#return-values-1)
 - [Usage](#usage)
   - [Docker Compose](#docker-compose)
+  - [Programatic](#programatic)
   - [Import client library](#import-client-library)
   - [Initialize parameters](#initialize-parameters)
-  - [Create API client](#create-api-client)
+  - [Create client](#create-client)
   - [Operations](#operations)
     - [Create](#create-1)
     - [Fetch](#fetch-1)
@@ -49,7 +50,7 @@ Simple and concise REST API client library to interact with Form3 REST API writt
 * Delete (DELETE)
 
 # Technical decisions
-This chapter describes the technical decisions which have been made regarding client API integration.
+This chapter describes the technical decisions which have been made regarding client API design and integration.
 Given the task client API should be
 
 * simple and concise
@@ -58,25 +59,26 @@ Given the task client API should be
 following higher level technical descisions have been made:
 
 * Abstraction
-  * Hide complexity by introducing abstraction. To achive this client library leverages GO language specific constructs like method receivers, structs and interfaces plus a well thought over implementation. 
+  * Hide complexity by introducing abstraction. To achive this client library leverages GO language specific constructs like method receivers, structs
 * Usage
   * Client library should be as easy as possible to use. To achive this client library introduces client initilizer function
   * The initilaizer function has been build in a way to support reusable client "instance" 
   * User will define API server specific parameters like IP, port and protocol schema only once through entire API server usage
-  * User defines more `variable` parameters within __parameters__ struct. More `variable` parameters for example are a __resource__ or a __base uri__  which can be changed any time through entire API server usage
+  * User defines more `variable` parameters within __parameters__ struct. `variable` parameters for example are a __resource__ or a __base uri__  which can be changed any time through entire API server usage
   * The library makes usage of default values whenever it makes sense and possible. 
 * Extendability
-  * Client library should be extendabale. To achive this client library introduces proper API interface
-      * which makes it possible to add 
-        * new functionality
-        * missing functionality
-      * introduces backwards compatability 
-      * introduces versioning support
+  * Client library should be extendabale. To achive this client library introduces proper API interface which makes it possible to:
+      * add new functionality
+      * add missing functionality
+      * introduce backwards compatability 
+      * introduce versioning support
 * Simplicity
   * Client library should be simple and consice. To achive this client library 
     * implementes proper functions and methods to abstract complexity
     * provides clean return value structure 
     * provides the possibility to build structured data out of given response data
+* Standard library only
+  * no 3rd party libraries were used 
 
 # Requirements
 
@@ -142,7 +144,11 @@ type Client struct {
 -	__port__ defines targets TCP port number. This is the API service listening port
 -	__uri__ defines final uri connection string. Intentionally not public needs to be generated
 
-Client struct implements __Operations__ interface.
+Client struct implements __APIInterface__ interface.
+
+```go
+var _ APIInterface = (*Client)(nil) // Verify that *Client implements APIInterface
+```
 
 ## Response
 Response is used to return API server body data and HTTP response code
@@ -184,8 +190,8 @@ Create new resource with __input__ data on REST endpoint.
 func (c *Client) Create(input []byte) (Response, error) {}
 ```
 #### Return values
-__Response__: Response struct
-__error__: error
+- __Response__: Response struct
+- __error__: error
 
 
 ### Delete
@@ -195,8 +201,8 @@ func (c *Client) Delete(id string, version int) (Response, error) {}
 ```
 
 #### Return value
-__Response__: Response struct
-__error__: error
+- __Response__: Response struct
+- __error__: error
 
 ### Fetch 
 Fetch resource with __id__.
@@ -205,14 +211,17 @@ func (c *Client) Fetch(id string) (Response, error) {}
 ```
 
 #### Return values
-__Response__: Response struct
-__error__: error
+- __Response__: Response struct
+- __error__: error
 
 
 # Usage
 
 ## Docker Compose
-__docker-compose up__ output:
+Run __docker-compose up__ from terminal. Entries starting with `client_1` are related to client api service.
+
+
+Output:
 
 ```bash
 client_1      | ..=== RUN   TestNewClient
@@ -246,6 +255,8 @@ client_1      | ?       github.com/cklewar/form3_rest_api_client/api/response   
 client_1      | ?       github.com/cklewar/form3_rest_api_client/examples       [no test files]
 ```
 
+## Programatic
+
 ## Import client library
 
 ```go
@@ -262,7 +273,8 @@ parameters := api.Parameters{
 }
 ```
 
-## Create API client
+## Create client
+Creating / initializing a new client is done by calling __NewClient()__ function. 
 ```go
 // Construct API Client
 c, err := client.NewClient("192.168.2.50", "", "", parameters)
@@ -424,6 +436,12 @@ Desicion has been made to use `golang:latest` debian based for testing instead o
 
 ## Unit
 Unit test coverage is not complete. Approach is to catch as many use cases / corner cases as possible. At least every function / method should be unit tested.
+
+Run unit tests with: 
+
+´´´bash
+go test -v ./api/client/ -coverprofile cover.out
+´´´
 
 ## Linter and Formatter
 * __golint__ used as linter and analyzes source code to flag programming errors, bugs, stylistic errors, and suspicious constructs.
