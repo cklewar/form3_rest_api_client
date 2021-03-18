@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -8,10 +9,10 @@ import (
 	"path/filepath"
 
 	"github.com/cklewar/form3_rest_api_client/api/client"
+	"github.com/cklewar/form3_rest_api_client/api/response"
 )
 
 func main() {
-
 	// Initialize api parameters
 	parameters := client.Parameters{
 		BaseURI:  "/v1/organisation/",
@@ -24,14 +25,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	//status, body := c.Fetch("ad27e265-9604-4b4b-a0e5-3003ea9cc4db")
-	//fmt.Println("Status:", status)
-	// fmt.Println(client.JSONPrettyPrint(body))
-	//var account response.OrganisationAccountData
-	//json.Unmarshal([]byte(body), &account)
-	//fmt.Println("ID:", account.Data.ID)
-	//fmt.Println("TYPE:", account.Data.Type)
 
 	// We use input file for feeding JSON data into create operation
 	cwd, err := os.Getwd()
@@ -54,6 +47,10 @@ func main() {
 	fmt.Println("ResponseCode: ", fetchResp.Code)
 	data, err = client.JSONPrettyPrint(fetchResp.Body)
 	fmt.Println(data)
+	var account response.OrganisationAccountData
+	json.Unmarshal([]byte(fetchResp.Body), &account)
+	fmt.Println("Id:", account.Data.ID)
+	fmt.Println("Type:", account.Data.Type)
 
 	version, _ := client.GetObjVersion(createResp.Body)
 	deleteResp, err := c.Delete(id, version, 0)
