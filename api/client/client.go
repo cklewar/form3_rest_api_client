@@ -50,17 +50,26 @@ type Client struct {
 	uri      string // not public needs to be generated
 }
 
+// Response is ...
+type Response struct {
+	Body []byte
+	Code int
+}
+
 // Create (POST) a new ressource to <request.uri>.
 // Return tuple(<StatusCode>, <response Body>).
 // Return error
-func (c *Client) Create(input []byte) ([]byte, error) {
-	var body []byte
+func (c *Client) Create(input []byte) (Response, error) {
+	response := Response{
+		Body: nil,
+		Code: -1,
+	}
 
 	fmt.Printf("Creating new resource at URI <%s>\n", c.uri)
 	req, err := http.NewRequest(http.MethodPost, c.uri, bytes.NewBuffer(input))
 
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 
 	req.Header.Add("Content-type", c.ContentType)
@@ -68,28 +77,38 @@ func (c *Client) Create(input []byte) ([]byte, error) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return nil, err
+		response.Code = resp.StatusCode
+		return response, err
 	}
 	defer resp.Body.Close()
 
+	var body []byte
 	body, err = ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 
-	return body, nil
+	response.Body = body
+	response.Code = resp.StatusCode
+
+	return response, nil
 }
 
 // Delete a resource by <id> and return StatusCode.
-// <StatusCode> code in case of error < 0
-func (c *Client) Delete(id string, version int) (int, error) {
+// Return error. In case of error returned integer value < 0
+func (c *Client) Delete(id string, version int) (Response, error) {
+	response := Response{
+		Body: nil,
+		Code: -1,
+	}
+
 	res := c.uri + id + "?version=" + strconv.Itoa(version)
 	fmt.Printf("Deleting resource at URI <%s>\n", res)
 	req, err := http.NewRequest(http.MethodDelete, res, nil)
 
 	if err != nil {
-		return -1, err
+		return response, err
 	}
 
 	req.Header.Add("Content-type", c.ContentType)
@@ -97,28 +116,31 @@ func (c *Client) Delete(id string, version int) (int, error) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return -1, err
+		return response, err
 	}
 	defer resp.Body.Close()
 
-	return resp.StatusCode, nil
-}
+	response.Code = resp.StatusCode
 
-// StatusCode is ...
-type StatusCode error
+	return response, nil
+}
 
 // Fetch (GET) data from API. Parameter is a resource's <id>.
 // Return tuple(<StatusCode>, <response Body>).
-// In case of error return <error> as status.
-func (c *Client) Fetch(id string) ([]byte, error) {
-	var body []byte
+// Return error
+func (c *Client) Fetch(id string) (Response, error) {
+	response := Response{
+		Body: nil,
+		Code: -1,
+	}
+
 	res := c.uri + id
 	fmt.Printf("Fetching from URI <%s>\n", res)
 	req, err := http.NewRequest(http.MethodGet, res, nil)
 
 	if err != nil {
 		log.Fatal("Error reading request. ", err)
-		return nil, err
+		return response, err
 	}
 
 	req.Header.Add("Content-type", c.ContentType)
@@ -126,17 +148,21 @@ func (c *Client) Fetch(id string) ([]byte, error) {
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 	defer resp.Body.Close()
 
+	var body []byte
 	body, err = ioutil.ReadAll(resp.Body)
 
 	if err != nil {
-		return nil, err
+		return response, err
 	}
 
-	return body, fmt.Errorf("%d", resp.StatusCode)
+	response.Body = body
+	response.Code = resp.StatusCode
+
+	return response, nil
 }
 
 // GetObjID is a support method extracting <id> out of JSON data
@@ -164,7 +190,7 @@ func (c *Client) GetObjID(input []byte) (string, error) {
 // GetObjVersion is a support method extracting <version> out of JSON data
 // GetObjVersion input parameter is byte array data from API response
 // Method handels byte array data as unstructured data by leveraging generic interface map
-// Method returns version as integer value. In case of error <error> returned
+// Method returns version as integer value. In case of error version < 0
 func (c *Client) GetObjVersion(input []byte) (int, error) {
 	// Declared array map of string with empty interface (unstructured input data)
 	// which will hold the value of the parsed json. Parse embedded object <version> in JSON and return.
@@ -185,7 +211,7 @@ func (c *Client) GetObjVersion(input []byte) (int, error) {
 }
 
 //
-// Default value methods start
+// Default value checking methods
 //
 func (p *Parameters) contentTypeBase() string {
 	base := p.ContentType
@@ -249,7 +275,7 @@ func NewClient(host string, port string, protocol string, p Parameters) (*Client
 	return &c, nil
 }
 
-// JSONPrettyPrint prints JSON data in a more readable way on terminal.
+// JSONPrettyPrint prints JSON data in a more readable way on terminal
 func JSONPrettyPrint(body []byte) (string, error) {
 	dst := &bytes.Buffer{}
 

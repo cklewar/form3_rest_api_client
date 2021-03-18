@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestTableNewClient(t *testing.T) {
+/*func TestTableNewClient(t *testing.T) {
 
 	var tables = []Parameters{
 		{
@@ -20,13 +20,14 @@ func TestTableNewClient(t *testing.T) {
 	}
 
 	for _, parameters := range tables {
-		_, ok := NewClient("", "", "", parameters)
+		_, ok := NewClient("192.168.2.50", "", "", parameters)
 
 		if ok != nil {
 			t.Errorf("Wrong result. Got %t but wanted %t", ok, false)
 		}
 	}
 }
+*/
 
 // Initialize parameters struct. Omit certain fields to test default value settings
 var defaultParams Parameters = Parameters{
@@ -36,9 +37,15 @@ var defaultParams Parameters = Parameters{
 
 func TestNewClient(t *testing.T) {
 	_, ok := NewClient("", "", "", defaultParams)
-	if ok != nil {
-		t.Errorf("Wrong result")
+	if ok == nil {
+		t.Errorf("Wrong result. Got nil but wanted error")
 	}
+}
+
+func TestFetch(t *testing.T) {
+	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+
+	c.Fetch()
 }
 
 func TestContentTypeBase(t *testing.T) {
