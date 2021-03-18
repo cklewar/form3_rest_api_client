@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 const host string = "accountapi"
@@ -57,7 +58,7 @@ func TestCreate(t *testing.T) {
 		t.Errorf("Error loading input data %v", err)
 	}
 
-	createResp, err := c.Create(createInputData)
+	createResp, err := c.Create(createInputData, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error creating data %v", err)
@@ -70,7 +71,7 @@ func TestCreate(t *testing.T) {
 
 func TestFetch(t *testing.T) {
 	c, _ := NewClient(host, "", "", defaultParams)
-	fetchResp, err := c.Fetch(accountID)
+	fetchResp, err := c.Fetch(accountID, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error fetching data %v", err)
@@ -84,7 +85,7 @@ func TestFetch(t *testing.T) {
 func TestDelete(t *testing.T) {
 	c, _ := NewClient(host, "", "", defaultParams)
 
-	deleteResp, err := c.Delete(accountID, 0)
+	deleteResp, err := c.Delete(accountID, 0, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error deleting data %v", err)
@@ -104,7 +105,7 @@ func TestDoubleCreate(t *testing.T) {
 		t.Errorf("Error loading input data %v", err)
 	}
 
-	createResp, err := c.Create(createInputData)
+	createResp, err := c.Create(createInputData, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error creating data %v", err)
@@ -114,7 +115,7 @@ func TestDoubleCreate(t *testing.T) {
 		t.Errorf("Error creating data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
 	}
 
-	createResp, err = c.Create(createInputData)
+	createResp, err = c.Create(createInputData, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error creating data %v", err)
@@ -124,7 +125,7 @@ func TestDoubleCreate(t *testing.T) {
 		t.Errorf("Error creating data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
 	}
 
-	deleteResp, err := c.Delete(accountID, 0)
+	deleteResp, err := c.Delete(accountID, 0, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error deleting data %v", err)
@@ -137,7 +138,7 @@ func TestDoubleCreate(t *testing.T) {
 
 func TestFetchNotFound(t *testing.T) {
 	c, _ := NewClient(host, "", "", defaultParams)
-	fetchResp, err := c.Fetch(accountID)
+	fetchResp, err := c.Fetch(accountID, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error fetching data %v", err)
@@ -152,17 +153,17 @@ func TestContentTypeBase(t *testing.T) {
 	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 
-	if c.ContentType != defaultContentType {
-		t.Errorf("Wrong result. Got %s but wanted %s", c.ContentType, defaultContentType)
+	if c.parameters.ContentType != defaultContentType {
+		t.Errorf("Wrong result. Got %s but wanted %s", c.parameters.ContentType, defaultContentType)
 	}
 }
 
-func TestTimeoutBase(t *testing.T) {
+func TestCheckTimeout(t *testing.T) {
 	// Construct client with default values
-	c, _ := NewClient(host, "", "", defaultParams)
+	var timeout time.Duration = checkTimeout(0)
 
-	if c.Timeout != defaultTimeout {
-		t.Errorf("Wrong result. Got %s but wanted %s", c.Timeout, defaultTimeout)
+	if timeout != defaultTimeout {
+		t.Errorf("Wrong result. Got %s but wanted %s", timeout, defaultTimeout)
 	}
 }
 
@@ -170,7 +171,7 @@ func TestPortBase(t *testing.T) {
 	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 
-	var port string = c.portBase("")
+	var port string = c.checkPort("")
 	if port != defaultPort {
 		t.Errorf("Wrong result. Got %s but wanted %s", port, defaultPort)
 	}
@@ -180,7 +181,7 @@ func TestProtocolBase(t *testing.T) {
 	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 
-	var protocol string = c.protocolBase("")
+	var protocol string = c.checkProtocol("")
 	if protocol != defaultProtocol {
 		t.Errorf("Wrong result. Got %s but wanted %s", protocol, defaultProtocol)
 	}
@@ -195,7 +196,7 @@ func TestGetObjID(t *testing.T) {
 		t.Errorf("Error loading input data %v", err)
 	}
 
-	createResp, err := c.Create(createInputData)
+	createResp, err := c.Create(createInputData, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error creating data %v", err)
@@ -215,7 +216,7 @@ func TestGetObjID(t *testing.T) {
 		t.Errorf("Error getting object id %v", id)
 	}
 
-	deleteResp, err := c.Delete(accountID, 0)
+	deleteResp, err := c.Delete(accountID, 0, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error deleting data %v", err)
@@ -236,7 +237,7 @@ func TestGetObjVersion(t *testing.T) {
 		t.Errorf("Error loading input data %v", err)
 	}
 
-	createResp, err := c.Create(createInputData)
+	createResp, err := c.Create(createInputData, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error creating data %v", err)
@@ -256,7 +257,7 @@ func TestGetObjVersion(t *testing.T) {
 		t.Errorf("Error getting object version %v", version)
 	}
 
-	deleteResp, err := c.Delete(accountID, 0)
+	deleteResp, err := c.Delete(accountID, 0, defaultTimeout)
 
 	if err != nil {
 		t.Errorf("Error deleting data %v", err)
@@ -265,5 +266,4 @@ func TestGetObjVersion(t *testing.T) {
 	if deleteResp.Code != http.StatusNoContent {
 		t.Errorf("Error deleting data. Got response code %v expected %v", deleteResp.Code, http.StatusNoContent)
 	}
-
 }
