@@ -3,15 +3,42 @@ Christian Klewar
 
 Go language experience is entry level / novice
 
+# Technical decisions
+This chapter describes the technical decisions which have been made regarding client API integration.
+Given the task client API should be
+
+* simple and concise
+* a client library suitable for use in another software project
+
+following higher level technical descisions have been made:
+
+* Abstraction
+  * Hide complexity by abstraction. to achive this client library leverages on one hand side GO specific language constructs like method receivers, structs and interfaces on the other hand side well thought over implementation strategy. 
+* Usage
+  * Client library should be as easy as possible to use. To achive this client library introduces client initilizer function. 
+  * The initilaizer function has been build in a way to support reusable client "instance" 
+  * User will define API server specific parameters like IP, port and protocol schema only once through entire API server usage
+  * User defines more "variable" parameters like a __resource__ or a __base uri__ which can be changed any time through entire API server usage
+  * The library makes usage of default values whenever it makes sense and possible. 
+* Extendability
+  * Client library should be extendabale. To achive this client library introduces proper API interface
+      * which makes it possible to add 
+        * new functionality
+        * missing functionality
+      * introduces backwards compatability 
+      * introduces versioning support
+* Simplicity
+  * Client library should be simple and consice. To achive this cleint library 
+    * implementes proper functions and methods to abstract complexity
+    * provides clean return value structure 
+    * provides the possibility to build structured data out of given response data
+
 # Description
 Simple and concise REST API client library to interact with Form3 REST API written in Go and suitable for use in another software project. Current supported operations are:
 
 * Create (POST)
 * Fetch (GET)
 * Delete (DELETE)
-
-# Technical decisions
-Contain documentation of your technical decisions.
 
 # Requirements
 
@@ -96,7 +123,7 @@ To create a REST API client one can use __NewClient()__ function. Client constru
 func NewClient(host string, port string, protocol string, p Parameters) (APIInterface, error)
 ```
 
-__NewClient__ function returns status boolean and initialized __Client__ struct. 
+__NewClient__ function returns initialized __APIInterface__ and error. 
 
 ## Operation Methods
 
