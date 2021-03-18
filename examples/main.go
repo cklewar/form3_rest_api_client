@@ -50,23 +50,20 @@ func main() {
 
 	id, _ := client.GetObjID(createResp.Body)
 	version, _ := client.GetObjVersion(createResp.Body)
-	//fetchResp, err := c.Fetch1(id)
-	//fmt.Println("Error: ", err)
-	//fmt.Println("ResponseCode: ", fetchResp.Code)
-	//data, err = client.JSONPrettyPrint(fetchResp.Body)
-	//fmt.Println(data)
+	fetchResp, err := c.Fetch(id)
+	fmt.Println("Error: ", err)
+	fmt.Println("ResponseCode: ", fetchResp.Code)
+	data, err = client.JSONPrettyPrint(fetchResp.Body)
+	fmt.Println(data)
 
 	deleteResp, err := c.Delete(id, version)
 	fmt.Println("Error: ", err)
 	fmt.Println("ResponseCode: ", deleteResp.Code)
 
-	parameters = client.Parameters{
-		BaseURI:  "/v2/organisation/",
-		Resource: "accounts",
-	}
+	//parameters = client.Parameters{
+	//	BaseURI:  "/v2/organisation/",
+	//	Resource: "accounts",
+	//}
 
-	c.Parameters = parameters
-	c.ContentType = ""
-	c.Resource = ""
-	c.BaseURI = ""
+	//c.Parameters = parameters
 }
