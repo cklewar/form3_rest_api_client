@@ -39,38 +39,52 @@ Parameters are implemented as struct. Parameters struct defines mandatory fields
 
 ```go
 type Parameters struct {
-	Timeout     time.Duration // HTTP wait timeout
-	Protocol    string        // HTTP or HTTPS
-	Host        string        // IP or DNS name of target host
-	Port        string        // TCP port number on target host
-	BaseURI     string        // base URI e.g. "/v1/organisation/" or "/v1/transaction/payments"
-	ContentType string        // Header content type e.g. application/vnd.api+json
-	Resource    string        // API resource endpoint e.g. account, claims
-	uri         string        // not public needs to be generated
+	Timeout     time.Duration // HTTP wait timeout. Default is time.Second * 10
+	BaseURI     string        // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!. Mandatrory field
+	ContentType string        // Header content type. Default is application/vnd.api+json
+	Resource    string        // API resource endpoint e.g. account, claims. Mandatory field
 }
 ```
 
 ### Fields
 - Timeout defines HTTP wait timeout for ```http.Client{}```
-- Protocol defines protocol schema e.g. http or https        
--	Host defines target IP or DNS name. This is the API server address
--	Port defines targets TCP port number. This is the API service listening port
+
 -	BaseURI defines base URI e.g. __/v1/organisation/__ or __/v1/transaction/payments__
 -	ContentType defines request header content type e.g. __application/vnd.api+json__
 -	Resource defines API resource endpoint e.g. __account__, __claims__
 -	uri defines final uri connection string. Intentionally not public needs to be generated
 
-## API Client
-API Client is implemented as struct embedding unnamed __Parameters__ struct. API client can be created using __NewClient()__ function. 
+## Client API
+Client API is implemented as struct embedding unnamed __Parameters__ struct. API client can be created using __NewClient()__ function. 
 
 ```go
 // Client is a struct which embeds Parameters
 type Client struct {
 	Parameters
+	protocol string // HTTP or HTTPS. Default is HTTP
+	host     string // IP or DNS name of target host. Mandatory field
+	port     string // TCP port number on target host. Default is 8080
+	uri      string // not public needs to be generated
 }
 ```
 
+### Fields
+- Protocol defines protocol schema e.g. http or https        
+-	Host defines target IP or DNS name. This is the API server address
+-	Port defines targets TCP port number. This is the API service listening port
+
 Client struct implements __Operations__ interface.
+
+## Response
+Response is used to return API server body data and according http response code
+
+```go
+// Response is used to return API server body data and according http response code
+type Response struct {
+	Body []byte
+	Code int
+}
+```
 
 ## Client API Constructor
 To create a REST API client one can use __NewClient()__ function. Client constructor will take __Parameters__ struct to initialize API client. 
@@ -157,14 +171,17 @@ if err != nil {
 Create a resource by calling create method on client.
 
 ```go
-status, createResp := c.Create(createInputData)
-fmt.Println("Status: ", status)
-fmt.Println(client.JSONPrettyPrint(createResp))
+createResp, err := c.Create(createInputData)
+fmt.Println("Error: ", err)
+fmt.Println("ResponseCode: ", createResp.Code)
+data, err := client.JSONPrettyPrint(createResp.Body)
+fmt.Println(data)
 ```
 
 Output
 
 ```bash
+Error: nil
 Status:  201
 {
   "data": {
@@ -193,14 +210,17 @@ Status:  201
 Fetch a resource by it's __id__. 
 
 ```go
-status, fetchResp := c.Fetch("ad27e265-9604-4b4b-a0e5-3003ea9cc4db")
-fmt.Println("Status: ", status)
-fmt.Println(client.JSONPrettyPrint(fetchResp))
+fetchResp, err := c.Fetch(id)
+fmt.Println("Error: ", err)
+fmt.Println("ResponseCode: ", fetchResp.Code)
+data, err = client.JSONPrettyPrint(fetchResp.Body)
+fmt.Println(data)
 ```
 
 Output
 
 ```bash
+Error: nil
 Status: 200
 {
   "data": {
@@ -229,13 +249,15 @@ Status: 200
 Delete a resource by it's __id__ and __version number__.
 
 ```go
-status = c.Delete("UUID", 0)
-fmt.Println("Status: ", status)
+deleteResp, err := c.Delete(id, version)
+fmt.Println("Error: ", err)
+fmt.Println("ResponseCode: ", deleteResp.Code)
 ```
 
 Output
 ```bash
-Status:  204
+Error:  <nil>
+ResponseCode:  204
 ```
 
 ## Response
