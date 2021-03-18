@@ -60,10 +60,10 @@ func main() {
 	fmt.Println("Error: ", err)
 	fmt.Println("ResponseCode: ", deleteResp.Code)
 
-	//parameters = client.Parameters{
-	//	BaseURI:  "/v2/organisation/",
-	//	Resource: "accounts",
-	//}
+	parameters = client.Parameters{
+		BaseURI:  "/v2/organisation/",
+		Resource: "accounts",
+	}
 
-	//c.Parameters = parameters
+	c.UpdateParameters(parameters)
 }

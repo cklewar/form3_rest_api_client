@@ -13,7 +13,7 @@ import (
 )
 
 // Version is the current library's version: sent with User-Agent
-const Version = "0.1"
+const Version = "0.0.1"
 
 // Default values
 const (
@@ -33,8 +33,15 @@ type APIInterface interface {
 	Fetch(id string, timeout time.Duration) (Response, error)
 }
 
+/*
+// Updater is ...
+type Updater interface {
+	UpdateParameters(p Parameters) error
+}
+*/
+
 // Parameters struct
-type parameters struct {
+type Parameters struct {
 	BaseURI     string // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!. Mandatrory field
 	ContentType string // Header content type. Default is application/vnd.api+json
 	Resource    string // API resource endpoint e.g. account, claims. Mandatory field
@@ -42,13 +49,14 @@ type parameters struct {
 
 // Client is a struct which embeds parameters struct
 type Client struct {
-	parameters
-	protocol string // HTTP or HTTPS. Default is HTTP
-	host     string // IP or DNS name of target host. Mandatory field
-	port     string // TCP port number on target host. Default is 8080
+	parameters Parameters
+	protocol   string // HTTP or HTTPS. Default is HTTP
+	host       string // IP or DNS name of target host. Mandatory field
+	port       string // TCP port number on target host. Default is 8080
 }
 
 var _ APIInterface = (*Client)(nil) // Verify that *Client implements APIInterface
+//var _ Updater = (*Client)(nil)      // Verify that *Client implements Updater
 
 // Response is used to return API server body data and according http response code
 type Response struct {
@@ -56,51 +64,53 @@ type Response struct {
 	Code int
 }
 
-func (c *Client) updateParameters(p parameters) error {
-
-	err := c.updateBaseURI(p.BaseURI)
+// UpdateParameters is ...
+func (c *Client) UpdateParameters(p Parameters) error {
+	err := c.UpdateBaseURI(p.BaseURI)
 
 	if err != nil {
 		return err
 	}
 
-	err = c.updateResource(p.Resource)
+	err = c.UpdateResource(p.Resource)
 
 	if err != nil {
 		return err
 	}
 
 	if p.ContentType == "" {
-		c.ContentType = defaultContentType
+		c.parameters.ContentType = defaultContentType
 	} else {
-		c.ContentType = p.ContentType
+		c.parameters.ContentType = p.ContentType
 	}
 
 	return nil
 }
 
-func (c *Client) updateBaseURI(baseURI string) error {
+// UpdateBaseURI is ...
+func (c *Client) UpdateBaseURI(baseURI string) error {
 	if baseURI == "" {
 		return fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
 	}
 
-	c.BaseURI = baseURI
+	c.parameters.BaseURI = baseURI
 	return nil
 }
 
-func (c *Client) updateResource(resource string) error {
+// UpdateResource is ...
+func (c *Client) UpdateResource(resource string) error {
 	if resource == "" {
 		return fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
 	}
 
-	c.Resource = resource
+	c.parameters.Resource = resource
 	return nil
 }
 
 func (c *Client) updateURI() (string, error) {
-	if c.BaseURI != "" && c.Resource != "" {
+	if c.parameters.BaseURI != "" && c.parameters.Resource != "" {
 		//Set final uri connect string
-		uri := c.protocol + "://" + c.host + ":" + c.port + c.BaseURI + c.Resource + "/"
+		uri := c.protocol + "://" + c.host + ":" + c.port + c.parameters.BaseURI + c.parameters.Resource + "/"
 		return uri, nil
 	}
 	return "", errors.New("Missing mandatory field")
@@ -128,7 +138,7 @@ func (c *Client) Create(input []byte, timeout time.Duration) (Response, error) {
 		return response, err
 	}
 
-	req.Header.Add("Content-type", c.ContentType)
+	req.Header.Add("Content-type", c.parameters.ContentType)
 	client := &http.Client{Timeout: checkTimeout(timeout)}
 	resp, err := client.Do(req)
 
@@ -173,7 +183,7 @@ func (c *Client) Delete(id string, version int, timeout time.Duration) (Response
 		return response, err
 	}
 
-	req.Header.Add("Content-type", c.ContentType)
+	req.Header.Add("Content-type", c.parameters.ContentType)
 	client := &http.Client{Timeout: checkTimeout(timeout)}
 	resp, err := client.Do(req)
 
@@ -211,7 +221,7 @@ func (c *Client) Fetch(id string, timeout time.Duration) (Response, error) {
 		return response, err
 	}
 
-	req.Header.Add("Content-type", c.ContentType)
+	req.Header.Add("Content-type", c.parameters.ContentType)
 	client := &http.Client{Timeout: checkTimeout(timeout)}
 	resp, err := client.Do(req)
 
@@ -242,7 +252,7 @@ func checkTimeout(timeout time.Duration) time.Duration {
 	return timeout
 }
 
-func (p *parameters) checkContentType() string {
+func (p *Parameters) checkContentType() string {
 	base := p.ContentType
 	if p.ContentType == "" {
 		base = defaultContentType
@@ -265,14 +275,14 @@ func (c *Client) checkPort(port string) string {
 }
 
 // NewClient constructor with default values check
-func NewClient(host string, port string, protocol string, p parameters) (*Client, error) {
+func NewClient(host string, port string, protocol string, p Parameters) (*Client, error) {
 	var client Client
 
 	if host == "" {
 		return &client, fmt.Errorf("%s %w", "Host", ErrParamNotSet)
 	}
 
-	err := client.updateParameters(p)
+	err := client.UpdateParameters(p)
 
 	if err != nil {
 		return &client, err
@@ -286,7 +296,7 @@ func NewClient(host string, port string, protocol string, p parameters) (*Client
 	}
 
 	// Check for parameters default value
-	client.ContentType = p.checkContentType()
+	client.parameters.ContentType = p.checkContentType()
 
 	return &client, nil
 }
