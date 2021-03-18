@@ -33,13 +33,6 @@ type APIInterface interface {
 	Fetch(id string, timeout time.Duration) (Response, error)
 }
 
-/*
-// Updater is ...
-type Updater interface {
-	UpdateParameters(p Parameters) error
-}
-*/
-
 // Parameters struct
 type Parameters struct {
 	BaseURI     string // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!. Mandatrory field

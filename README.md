@@ -181,10 +181,10 @@ __Client__ must implement __APIInterface__.
 ## Operation Methods
 
 ### Create
-Create new resource with __input__ data on REST endpoint.
+Create new resource with __input__ data and timeout set.
 
 ```go
-func (c *Client) Create(input []byte) (Response, error) {}
+Create(input []byte, timeout time.Duration) (Response, error){}
 ```
 #### Return values
 - __Response__: Response struct
@@ -192,9 +192,9 @@ func (c *Client) Create(input []byte) (Response, error) {}
 
 
 ### Delete
-Delete resource with __id__ and __version__.
+Delete resource with __id__, __version__ and timeout set.
 ```go
-func (c *Client) Delete(id string, version int) (Response, error) {}
+Delete(id string, version int, timeout time.Duration) (Response, error) {}
 ```
 
 #### Return value
@@ -202,21 +202,19 @@ func (c *Client) Delete(id string, version int) (Response, error) {}
 - __error__: error
 
 ### Fetch 
-Fetch resource with __id__.
+Fetch resource with __id__ and timeout set.
 ```go
-func (c *Client) Fetch(id string) (Response, error) {}
+Fetch(id string, timeout time.Duration) (Response, error) {}
 ```
 
 #### Return values
 - __Response__: Response struct
 - __error__: error
 
-
 # Usage
 
 ## Docker Compose
 Run __docker-compose up__ from terminal. Entries starting with `client_1` are related to client api service.
-
 
 Output:
 
@@ -295,7 +293,7 @@ if err != nil {
 Create a resource by calling create method on client.
 
 ```go
-createResp, err := c.Create(createInputData)
+createResp, err := c.Create(createInputData, 0)
 fmt.Println("Error: ", err)
 fmt.Println("ResponseCode: ", createResp.Code)
 data, err := client.JSONPrettyPrint(createResp.Body)
@@ -334,7 +332,7 @@ Status:  201
 Fetch a resource by it's __id__. 
 
 ```go
-fetchResp, err := c.Fetch(id)
+fetchResp, err := c.Fetch(id, 0)
 fmt.Println("Error: ", err)
 fmt.Println("ResponseCode: ", fetchResp.Code)
 data, err = client.JSONPrettyPrint(fetchResp.Body)
@@ -373,7 +371,7 @@ Status: 200
 Delete a resource by it's __id__ and __version number__.
 
 ```go
-deleteResp, err := c.Delete(id, version)
+deleteResp, err := c.Delete(id, version, 0)
 fmt.Println("Error: ", err)
 fmt.Println("ResponseCode: ", deleteResp.Code)
 ```
@@ -385,7 +383,7 @@ ResponseCode:  204
 ```
 
 ### Parameters
-Changing parameters by creating new parameters struct and assign to client __c.Parameters__. 
+Changing parameters by creating new parameters struct and calling __updateParameters()__ function. 
 
 ```go
 parameters = client.Parameters{
@@ -396,7 +394,7 @@ parameters = client.Parameters{
 err := c.UpdateParameters(parameters)
 ```
 
-Changing clients parameter values by accessing and assinging new values on client struct.
+Changing clients parameter values by accessing and assigning new values on client struct.
 
 ```go
 c.UpdateContentType("NEW CONTENT TYPE")
