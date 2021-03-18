@@ -135,6 +135,19 @@ func TestDoubleCreate(t *testing.T) {
 	}
 }
 
+func TestFetchNotFound(t *testing.T) {
+	c, _ := NewClient(host, "", "", defaultParams)
+	fetchResp, err := c.Fetch(accountID)
+
+	if err != nil {
+		t.Errorf("Error fetching data %v", err)
+	}
+
+	if fetchResp.Code != http.StatusNotFound {
+		t.Errorf("Fetching data ok. Got response code %v expected %v", fetchResp.Code, http.StatusNotFound)
+	}
+}
+
 func TestContentTypeBase(t *testing.T) {
 	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
