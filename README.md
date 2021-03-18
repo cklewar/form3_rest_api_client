@@ -29,10 +29,11 @@ golang.org/x/tools v0.1.0 // indirect
 Operations are defined in __Operations__ interface. __Operations__ type define common method sets. Type __Parameters__ therefore, is said to implement __Operations__ interface by implementing its methods. In that light, __Operations__ interface enable us compose custom types that have a common behavior.
 
 ```go
-type Operations interface {
-	Create(id string) (int, []byte)
-	Delete(id string, version int) int
-	Fetch(id string) (int, []byte)
+// APIInterface is a public interface
+type APIInterface interface {
+	Create(input []byte) (Response, error)
+	Delete(id string, version int) (Response, error)
+	Fetch(id string) (Response, error)
 }
 ```
 
@@ -92,7 +93,7 @@ type Response struct {
 To create a REST API client one can use __NewClient()__ function. Client constructor will take __Parameters__ struct to initialize API client. 
 
 ```go
-func NewClient(o Parameters) (bool, *Client) {}
+func NewClient(host string, port string, protocol string, p Parameters) (APIInterface, error)
 ```
 
 __NewClient__ function returns status boolean and initialized __Client__ struct. 
@@ -103,7 +104,7 @@ __NewClient__ function returns status boolean and initialized __Client__ struct.
 Create new resource with __input__ data on REST endpoint.
 
 ```go
-func (c *Client) Create(input []byte) (int, []byte) {}
+func (c *Client) Create(input []byte) (Response, error) {}
 ```
 #### Return values
 __int__: Integer < 0 if error occured or HTTP status code e.g. 404, 201  
@@ -113,7 +114,7 @@ __[]byte__: API server response body
 ### Delete
 Delete resource with __id__ and __version__.
 ```go
-func (c *Client) Delete(id string, version int) int {}
+func (c *Client) Delete(id string, version int) (Response, error) {}
 ```
 
 #### Return value
@@ -122,7 +123,7 @@ __int__: Integer < 0 if error occured or HTTP status code e.g. 404, 201
 ### Fetch 
 
 ```go
-func (c *Client) Fetch(id string) (int, []byte) {}
+func (c *Client) Fetch(id string) (Response, error) {}
 ```
 
 #### Return values

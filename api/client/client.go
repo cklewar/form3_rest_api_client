@@ -23,11 +23,11 @@ const (
 	defaultContentType = "application/vnd.api+json"
 )
 
-// ErrParamNotSet is ...
+// ErrParamNotSet is used when mandatory parameter not set
 var ErrParamNotSet = errors.New("parameter not set")
 
-// API defined in public interface
-type API interface {
+// APIInterface is a public interface
+type APIInterface interface {
 	Create(input []byte) (Response, error)
 	Delete(id string, version int) (Response, error)
 	Fetch(id string) (Response, error)
@@ -198,8 +198,8 @@ func (c *Client) portBase(port string) string {
 }
 
 // NewClient constructor with default values check
-func NewClient(host string, port string, protocol string, p Parameters) (API, error) {
-	var api API
+func NewClient(host string, port string, protocol string, p Parameters) (APIInterface, error) {
+	var api APIInterface
 	var client Client
 
 	if host == "" {
