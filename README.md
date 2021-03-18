@@ -1,6 +1,8 @@
 # Author
 Christian Klewar
 
+Go language experience is entry level / novice
+
 # Description
 Simple and concise REST API client library to interact with Form3 REST API written in Go and suitable for use in another software project. Current supported operations are:
 

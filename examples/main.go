@@ -48,8 +48,8 @@ func main() {
 	data, err := client.JSONPrettyPrint(createResp.Body)
 	fmt.Println(data)
 
-	id, _ := c.GetObjID(createResp.Body)
-	version, _ := c.GetObjVersion(createResp.Body)
+	id, _ := client.GetObjID(createResp.Body)
+	version, _ := client.GetObjVersion(createResp.Body)
 	fetchResp, err := c.Fetch(id)
 	fmt.Println("Error: ", err)
 	fmt.Println("ResponseCode: ", fetchResp.Code)

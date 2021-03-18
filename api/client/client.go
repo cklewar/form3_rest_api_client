@@ -26,11 +26,11 @@ const (
 // ErrParamNotSet is ...
 var ErrParamNotSet = errors.New("parameter not set")
 
-// Operations defined in public interface
-type Operations interface {
-	Create(id string) (int, []byte)
-	Delete(id string, version int) int
-	Fetch(id string) (int, []byte)
+// API defined in public interface
+type API interface {
+	Create(input []byte) (Response, error)
+	Delete(id string, version int) (Response, error)
+	Fetch(id string) (Response, error)
 }
 
 // Parameters public structure
@@ -50,7 +50,7 @@ type Client struct {
 	uri      string // not public needs to be generated
 }
 
-// Response is ...
+// Response is used to return API server body data and according http response code
 type Response struct {
 	Body []byte
 	Code int
@@ -165,55 +165,9 @@ func (c *Client) Fetch(id string) (Response, error) {
 	return response, nil
 }
 
-// GetObjID is a support method extracting <id> out of JSON data
-// GetObjID input parameter is byte array data from API response
-// Method handels byte array data as unstructured data by leveraging generic interface map
-// Method returns id as string value. In case of error empty string returned
-func (c *Client) GetObjID(input []byte) (string, error) {
-	var id string
-	// Declared array map of string with empty interface (unstructured input data)
-	// which will hold the value of the parsed json. Parsing embedded object <id> in JSON and return.
-	var raw map[string]interface{}
-	err := json.Unmarshal(input, &raw)
-
-	if err != nil {
-		log.Fatal(err)
-		return id, err
-	}
-
-	raw = raw["data"].(map[string]interface{})
-	id = raw["id"].(string)
-
-	return id, nil
-}
-
-// GetObjVersion is a support method extracting <version> out of JSON data
-// GetObjVersion input parameter is byte array data from API response
-// Method handels byte array data as unstructured data by leveraging generic interface map
-// Method returns version as integer value. In case of error version < 0
-func (c *Client) GetObjVersion(input []byte) (int, error) {
-	// Declared array map of string with empty interface (unstructured input data)
-	// which will hold the value of the parsed json. Parse embedded object <version> in JSON and return.
-	var raw map[string]interface{}
-	err := json.Unmarshal(input, &raw)
-
-	if err != nil {
-		log.Fatal(err)
-		return -1, err
-	}
-
-	raw = raw["data"].(map[string]interface{})
-	// Converting version type from float to integer.
-	// Investigate why is value mapped as float when using empty interface?
-	version := int(raw["version"].(float64))
-
-	return version, nil
-}
-
-//
 // Default value checking methods
-//
 func (p *Parameters) contentTypeBase() string {
+
 	base := p.ContentType
 	if p.ContentType == "" {
 		base = defaultContentType
@@ -244,35 +198,83 @@ func (c *Client) portBase(port string) string {
 }
 
 // NewClient constructor with default values check
-func NewClient(host string, port string, protocol string, p Parameters) (*Client, error) {
-	var c Client
+func NewClient(host string, port string, protocol string, p Parameters) (API, error) {
+	var api API
+	var client Client
 
 	if host == "" {
-		return &c, fmt.Errorf("%s %w", "Host", ErrParamNotSet)
+		return api, fmt.Errorf("%s %w", "Host", ErrParamNotSet)
 	}
 
-	c = Client{
+	client = Client{
 		host:       host,
-		port:       c.portBase(port),
-		protocol:   c.protocolBase(protocol),
+		port:       client.portBase(port),
+		protocol:   client.protocolBase(protocol),
 		Parameters: p,
 	}
 
-	if c.BaseURI == "" {
-		return &c, fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
+	api = &client
+
+	if client.BaseURI == "" {
+		return api, fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
 	}
 
-	if c.Resource == "" {
-		return &c, fmt.Errorf("%q: %w", "Resource", ErrParamNotSet)
+	if client.Resource == "" {
+		return api, fmt.Errorf("%q: %w", "Resource", ErrParamNotSet)
 	}
 	// Check for setting parameters default value
-	c.Timeout = p.timeoutBase()
-	c.ContentType = p.contentTypeBase()
+	client.Timeout = p.timeoutBase()
+	client.ContentType = p.contentTypeBase()
 
 	//Set final uri connect string
-	c.uri = c.protocol + "://" + c.host + ":" + c.port + c.BaseURI + c.Resource + "/"
+	client.uri = client.protocol + "://" + client.host + ":" + client.port + client.BaseURI + client.Resource + "/"
 
-	return &c, nil
+	return api, nil
+}
+
+// GetObjID is a support function extracting <id> out of JSON data
+// GetObjID input parameter is byte array data from API response
+// Method handels byte array data as unstructured data by leveraging generic interface map
+// Method returns id as string value. In case of error empty string returned
+func GetObjID(input []byte) (string, error) {
+	var id string
+	// Declared array map of string with empty interface (unstructured input data)
+	// which will hold the value of the parsed json. Parsing embedded object <id> in JSON and return.
+	var raw map[string]interface{}
+	err := json.Unmarshal(input, &raw)
+
+	if err != nil {
+		log.Fatal(err)
+		return id, err
+	}
+
+	raw = raw["data"].(map[string]interface{})
+	id = raw["id"].(string)
+
+	return id, nil
+}
+
+// GetObjVersion is a support function extracting <version> out of JSON data
+// GetObjVersion input parameter is byte array data from API response
+// Method handels byte array data as unstructured data by leveraging generic interface map
+// Method returns version as integer value. In case of error version < 0
+func GetObjVersion(input []byte) (int, error) {
+	// Declared array map of string with empty interface (unstructured input data)
+	// which will hold the value of the parsed json. Parse embedded object <version> in JSON and return.
+	var raw map[string]interface{}
+	err := json.Unmarshal(input, &raw)
+
+	if err != nil {
+		log.Fatal(err)
+		return -1, err
+	}
+
+	raw = raw["data"].(map[string]interface{})
+	// Converting version type from float to integer.
+	// Investigate why is value mapped as float when using empty interface?
+	version := int(raw["version"].(float64))
+
+	return version, nil
 }
 
 // JSONPrettyPrint prints JSON data in a more readable way on terminal
