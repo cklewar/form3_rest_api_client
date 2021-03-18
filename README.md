@@ -153,7 +153,7 @@ parameters := api.Parameters{
 ## Create API client
 ```go
 // Construct API Client
-status, c := client.NewClient(parameters)
+c, err := client.NewClient("192.168.2.50", "", "", parameters)
 ```
 
 ## Operations
@@ -285,7 +285,16 @@ Type: accounts
 # Testing
 Be well tested to the level you would expect in a commercial environment.
 Have tests that run from docker-compose up - our reviewers will run docker-compose up to assess if your tests pass.
-## Linter
-## Unit tests
-## Functional tests
-## Smoke tests
+
+## Unit
+Unit test coverage is not complete. Approach is to catch as many use cases / corner cases as possible. At least every function / method should be unit tested.
+
+## Linter and Formatter
+* __golint__ used as linter and analyzes source code to flag programming errors, bugs, stylistic errors, and suspicious constructs.
+* __gofmt__ used to shape the source code 
+
+## Functional
+Functional test would expect to get a specific value from the API server as defined by the requirements. Functional tests are not part of this repository. 
+
+## Integration
+Integration testing is done using micro service approach. Client API testing the interaction with the API server serivice and making sure that microservices work together as expected.
