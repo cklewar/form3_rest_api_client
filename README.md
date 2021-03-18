@@ -84,7 +84,7 @@ type Parameters struct {
 
 __BaseURI__ and __Resource__ are mandatory fields and do not provide default values.
 
-## Client API
+## Client
 Client API is implemented as struct embedding unnamed __Parameters__ struct. API client can be created using __NewClient()__ function. 
 
 ```go
@@ -122,7 +122,7 @@ type Response struct {
 - __Code__ stores API server repsonse code        
 
 
-## Client API Constructor
+## Client constructor
 To create a new client one can use __NewClient()__ function. 
 
 * Function will take host, port and protocol
@@ -156,10 +156,11 @@ func (c *Client) Delete(id string, version int) (Response, error) {}
 ```
 
 #### Return value
-__int__: Integer < 0 if error occured or HTTP status code e.g. 404, 201 
+__Response__: Response struct
+__error__: error
 
 ### Fetch 
-
+Fetch resource with __id__.
 ```go
 func (c *Client) Fetch(id string) (Response, error) {}
 ```
@@ -319,8 +320,8 @@ Type: accounts
 ```
 
 # Testing
-Be well tested to the level you would expect in a commercial environment.
-Have tests that run from docker-compose up - our reviewers will run docker-compose up to assess if your tests pass.
+* Have tests that run from docker-compose up
+* Uur reviewers will run docker-compose up to assess if your tests pass.
 
 ## Unit
 Unit test coverage is not complete. Approach is to catch as many use cases / corner cases as possible. At least every function / method should be unit tested.
