@@ -124,7 +124,7 @@ type parameters struct {
 __BaseURI__ and __Resource__ are mandatory fields and do not provide default values.
 
 ## Client
-Client API is implemented as struct embedding unnamed __Parameters__ struct. API client can be created using __NewClient()__ function. 
+Client API is of type struct embedding named __Parameters__ struct. API client can be created using __NewClient()__ function. 
 
 ```go
 // Client is a struct which embeds parameters struct (unnamed)
@@ -137,11 +137,12 @@ type Client struct {
 ```
 
 ### Fields
+- __parameters__ embed Parameters struct
 - __protocol__ defines protocol schema e.g. http or https        
 -	__host__ defines target IP or DNS name. This is the API server address
 -	__port__ defines targets TCP port number. This is the API service listening port
 
-Client struct implements __APIInterface__ interface.
+Client struct implements __APIInterface__ interface behaviour.
 
 ```go
 var _ APIInterface = (*Client)(nil) // Verify that *Client implements APIInterface
@@ -186,6 +187,7 @@ Create new resource with __input__ data and timeout set.
 ```go
 Create(input []byte, timeout time.Duration) (Response, error){}
 ```
+
 #### Return values
 - __Response__: Response struct
 - __error__: error
