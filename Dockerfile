@@ -1,12 +1,6 @@
-FROM golang
-
-# Install git
-RUN set -ex; \
-    apk update; \
-    apk add --no-cache git
-
-# Set working directory
+FROM golang:latest as BUILD
+RUN apt-get update && \
+    apt-get install -y xvfb wkhtmltopdf ghostscript
 WORKDIR /form3_rest_api_client
-
-# Run tests
-CMD CGO_ENABLED=0 go test ./...
+COPY . .
+ENTRYPOINT ["go", "test", "-v", "./...", "-coverprofile", "cover.out"]
