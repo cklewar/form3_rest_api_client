@@ -44,5 +44,6 @@ services:
     build:
       context: .
     depends_on:
-      - accountapi
-
+      - "accountapi"
+    #restart: always
+    
