@@ -172,6 +172,42 @@ __error__: error
 
 
 # Usage
+
+## Docker Compose
+__docker-compose up__ output:
+
+```bash
+client_1      | ..=== RUN   TestNewClient
+client_1      | --- PASS: TestNewClient (0.00s)
+client_1      | === RUN   TestCreate
+client_1      | PATH: ../../examples/json/org_acc_create.json
+client_1      | Creating new resource at URI <http://accountapi:8080/v1/organisation/accounts/>
+client_1      | Deleting resource at URI <http://accountapi:8080/v1/organisation/accounts/de37f789-1604-7c5b-a1e5-3673ea9cc2db?version=0>
+client_1      | --- PASS: TestCreate (0.02s)
+client_1      | === RUN   TestFetch
+client_1      | Creating new resource at URI <http://accountapi:8080/v1/organisation/accounts/>
+client_1      | Fetching from URI <http://accountapi:8080/v1/organisation/accounts/de37f789-1604-7c5b-a1e5-3673ea9cc2db>
+client_1      | Deleting resource at URI <http://accountapi:8080/v1/organisation/accounts/de37f789-1604-7c5b-a1e5-3673ea9cc2db?version=0>
+client_1      | --- PASS: TestFetch (0.01s)
+client_1      | === RUN   TestDelete
+client_1      | Creating new resource at URI <http://accountapi:8080/v1/organisation/accounts/>
+client_1      | Deleting resource at URI <http://accountapi:8080/v1/organisation/accounts/de37f789-1604-7c5b-a1e5-3673ea9cc2db?version=0>
+client_1      | --- PASS: TestDelete (0.00s)
+client_1      | === RUN   TestContentTypeBase
+client_1      | --- PASS: TestContentTypeBase (0.00s)
+client_1      | === RUN   TestTimeoutBase
+client_1      | --- PASS: TestTimeoutBase (0.00s)
+client_1      | === RUN   TestPortBase
+client_1      | --- PASS: TestPortBase (0.00s)
+client_1      | === RUN   TestProtocolBase
+client_1      | --- PASS: TestProtocolBase (0.00s)
+client_1      | PASS
+client_1      | coverage: 78.0% of statements
+client_1      | ok      github.com/cklewar/form3_rest_api_client/api/client     0.042s  coverage: 78.0% of statements
+client_1      | ?       github.com/cklewar/form3_rest_api_client/api/response   [no test files]
+client_1      | ?       github.com/cklewar/form3_rest_api_client/examples       [no test files]
+```
+
 ## Import client library
 
 ```go
