@@ -50,6 +50,8 @@ type Client struct {
 	uri      string // not public needs to be generated
 }
 
+var _ APIInterface = (*Client)(nil) // Verify that *Client implements APIInterface
+
 // Response is used to return API server body data and according http response code
 type Response struct {
 	Body []byte
@@ -198,12 +200,16 @@ func (c *Client) portBase(port string) string {
 }
 
 // NewClient constructor with default values check
-func NewClient(host string, port string, protocol string, p Parameters) (APIInterface, error) {
-	var api APIInterface
+func NewClient(host string, port string, protocol string, p Parameters) (*Client, error) {
+	//var api APIInterface
 	var client Client
+	//api = &client
+	//abc := api.(*Client)
+
+	// abc := &client
 
 	if host == "" {
-		return api, fmt.Errorf("%s %w", "Host", ErrParamNotSet)
+		return &client, fmt.Errorf("%s %w", "Host", ErrParamNotSet)
 	}
 
 	client = Client{
@@ -213,14 +219,12 @@ func NewClient(host string, port string, protocol string, p Parameters) (APIInte
 		Parameters: p,
 	}
 
-	api = &client
-
 	if client.BaseURI == "" {
-		return api, fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
+		return &client, fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
 	}
 
 	if client.Resource == "" {
-		return api, fmt.Errorf("%q: %w", "Resource", ErrParamNotSet)
+		return &client, fmt.Errorf("%q: %w", "Resource", ErrParamNotSet)
 	}
 	// Check for setting parameters default value
 	client.Timeout = p.timeoutBase()
@@ -229,7 +233,8 @@ func NewClient(host string, port string, protocol string, p Parameters) (APIInte
 	//Set final uri connect string
 	client.uri = client.protocol + "://" + client.host + ":" + client.port + client.BaseURI + client.Resource + "/"
 
-	return api, nil
+	return &client, nil
+
 }
 
 // GetObjID is a support function extracting <id> out of JSON data

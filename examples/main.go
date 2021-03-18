@@ -19,10 +19,10 @@ func main() {
 	}
 
 	// Construct client with default values
-	c, cStatus := client.NewClient("192.168.2.50", "", "", parameters)
+	c, err := client.NewClient("192.168.2.50", "", "", parameters)
 
-	if cStatus != nil {
-		log.Fatal(cStatus)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	//status, body := c.Fetch("ad27e265-9604-4b4b-a0e5-3003ea9cc4db")
@@ -50,13 +50,20 @@ func main() {
 
 	id, _ := client.GetObjID(createResp.Body)
 	version, _ := client.GetObjVersion(createResp.Body)
-	fetchResp, err := c.Fetch(id)
-	fmt.Println("Error: ", err)
-	fmt.Println("ResponseCode: ", fetchResp.Code)
-	data, err = client.JSONPrettyPrint(fetchResp.Body)
-	fmt.Println(data)
+	//fetchResp, err := c.Fetch1(id)
+	//fmt.Println("Error: ", err)
+	//fmt.Println("ResponseCode: ", fetchResp.Code)
+	//data, err = client.JSONPrettyPrint(fetchResp.Body)
+	//fmt.Println(data)
 
 	deleteResp, err := c.Delete(id, version)
 	fmt.Println("Error: ", err)
 	fmt.Println("ResponseCode: ", deleteResp.Code)
+
+	parameters = client.Parameters{
+		BaseURI:  "/v2/organisation/",
+		Resource: "accounts",
+	}
+	//abc := c.(*client.Client)
+	//fmt.Println(abc.ContentType)
 }

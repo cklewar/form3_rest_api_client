@@ -42,11 +42,9 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
-func TestFetch(t *testing.T) {
-	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
-
-	c.Fetch()
-}
+//func TestFetch(t *testing.T) {
+//	c, _ := NewClient("192.168.2.50", "", "", defaultParams)
+//}
 
 func TestContentTypeBase(t *testing.T) {
 	// Construct client with default values
