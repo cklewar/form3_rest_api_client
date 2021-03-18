@@ -390,21 +390,19 @@ Changing parameters by creating new parameters struct and assign to client __c.P
 ```go
 parameters = client.Parameters{
   BaseURI:  "/v2/organisation/",
-  Resource: "accounts",
+  Resource: "payments",
 }
 
-c.Parameters = parameters
+err := c.UpdateParameters(parameters)
 ```
 
 Changing clients parameter values by accessing and assinging new values on client struct.
 
 ```go
-c.ContentType = "NEW CONTENT TYPE"
-c.Resource = "NEW RESOURCE"
-c.BaseURI = "NEW BASEURI"
+c.UpdateContentType("NEW CONTENT TYPE")
+c.UpdateResource("NEW RESOURCE")
+c.UpdateBaseURI("NEW BASEURI")
 ```
-
-This implementation is not complete. Better way doing this is to check for mandatory field values like __Resource__ not allowed to be empty string. Exposing functions to check for "emptyness" and returning error state or setting default value whenever possible could solve this issue from an API validation perspective.
 
 ## Response
 Client library provides structured response data within response package. Response package defines e.g. __Organisation Account__ data structures for unmarshaling API server JSON response data into structs. 
