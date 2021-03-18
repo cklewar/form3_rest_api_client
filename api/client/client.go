@@ -15,7 +15,7 @@ import (
 // Version is the current library's version: sent with User-Agent
 const Version = "0.1"
 
-// Parameters default values
+// Default values
 const (
 	defaultProtocol    = "http"
 	defaultTimeout     = time.Second * 10
@@ -26,8 +26,6 @@ const (
 // ErrParamNotSet is used when mandatory parameter not set
 var ErrParamNotSet = errors.New("parameter not set")
 
-//// HTTP wait timeout. Default is time.Second * 10
-
 // APIInterface is a public interface
 type APIInterface interface {
 	Create(input []byte, timeout time.Duration) (Response, error)
@@ -35,20 +33,19 @@ type APIInterface interface {
 	Fetch(id string, timeout time.Duration) (Response, error)
 }
 
-// Parameters public structure
-type Parameters struct {
+// Parameters struct
+type parameters struct {
 	BaseURI     string // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!. Mandatrory field
 	ContentType string // Header content type. Default is application/vnd.api+json
 	Resource    string // API resource endpoint e.g. account, claims. Mandatory field
 }
 
-// Client is a struct which embeds Parameters
+// Client is a struct which embeds parameters struct
 type Client struct {
-	Parameters
+	parameters
 	protocol string // HTTP or HTTPS. Default is HTTP
 	host     string // IP or DNS name of target host. Mandatory field
 	port     string // TCP port number on target host. Default is 8080
-	uri      string // not public needs to be generated
 }
 
 var _ APIInterface = (*Client)(nil) // Verify that *Client implements APIInterface
@@ -57,6 +54,56 @@ var _ APIInterface = (*Client)(nil) // Verify that *Client implements APIInterfa
 type Response struct {
 	Body []byte
 	Code int
+}
+
+func (c *Client) updateParameters(p parameters) error {
+
+	err := c.updateBaseURI(p.BaseURI)
+
+	if err != nil {
+		return err
+	}
+
+	err = c.updateResource(p.Resource)
+
+	if err != nil {
+		return err
+	}
+
+	if p.ContentType == "" {
+		c.ContentType = defaultContentType
+	} else {
+		c.ContentType = p.ContentType
+	}
+
+	return nil
+}
+
+func (c *Client) updateBaseURI(baseURI string) error {
+	if baseURI == "" {
+		return fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
+	}
+
+	c.BaseURI = baseURI
+	return nil
+}
+
+func (c *Client) updateResource(resource string) error {
+	if resource == "" {
+		return fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
+	}
+
+	c.Resource = resource
+	return nil
+}
+
+func (c *Client) updateURI() (string, error) {
+	if c.BaseURI != "" && c.Resource != "" {
+		//Set final uri connect string
+		uri := c.protocol + "://" + c.host + ":" + c.port + c.BaseURI + c.Resource + "/"
+		return uri, nil
+	}
+	return "", errors.New("Missing mandatory field")
 }
 
 // Create (POST) a new ressource to <request.uri>.
@@ -68,8 +115,14 @@ func (c *Client) Create(input []byte, timeout time.Duration) (Response, error) {
 		Code: -1,
 	}
 
-	fmt.Printf("Creating new resource at URI <%s>\n", c.uri)
-	req, err := http.NewRequest(http.MethodPost, c.uri, bytes.NewBuffer(input))
+	uri, err := c.updateURI()
+
+	if err != nil {
+		return response, err
+	}
+
+	fmt.Printf("Creating new resource at URI <%s>\n", uri)
+	req, err := http.NewRequest(http.MethodPost, uri, bytes.NewBuffer(input))
 
 	if err != nil {
 		return response, err
@@ -99,14 +152,20 @@ func (c *Client) Create(input []byte, timeout time.Duration) (Response, error) {
 }
 
 // Delete a resource by <id> and return StatusCode.
-// Return error. In case of error returned integer value < 0
+// Return error
 func (c *Client) Delete(id string, version int, timeout time.Duration) (Response, error) {
 	response := Response{
 		Body: nil,
 		Code: -1,
 	}
 
-	res := c.uri + id + "?version=" + strconv.Itoa(version)
+	uri, err := c.updateURI()
+
+	if err != nil {
+		return response, err
+	}
+
+	res := uri + id + "?version=" + strconv.Itoa(version)
 	fmt.Printf("Deleting resource at URI <%s>\n", res)
 	req, err := http.NewRequest(http.MethodDelete, res, nil)
 
@@ -129,7 +188,7 @@ func (c *Client) Delete(id string, version int, timeout time.Duration) (Response
 }
 
 // Fetch (GET) data from API. Parameter is a resource's <id>.
-// Return tuple(<StatusCode>, <response Body>).
+// Return Response struct
 // Return error
 func (c *Client) Fetch(id string, timeout time.Duration) (Response, error) {
 	response := Response{
@@ -137,7 +196,13 @@ func (c *Client) Fetch(id string, timeout time.Duration) (Response, error) {
 		Code: -1,
 	}
 
-	res := c.uri + id
+	uri, err := c.updateURI()
+
+	if err != nil {
+		return response, err
+	}
+
+	res := uri + id
 	fmt.Printf("Fetching from URI <%s>\n", res)
 	req, err := http.NewRequest(http.MethodGet, res, nil)
 
@@ -169,7 +234,15 @@ func (c *Client) Fetch(id string, timeout time.Duration) (Response, error) {
 }
 
 // Default value checking methods
-func (p *Parameters) contentTypeBase() string {
+
+func checkTimeout(timeout time.Duration) time.Duration {
+	if timeout == 0 {
+		return defaultTimeout
+	}
+	return timeout
+}
+
+func (p *parameters) checkContentType() string {
 	base := p.ContentType
 	if p.ContentType == "" {
 		base = defaultContentType
@@ -177,14 +250,14 @@ func (p *Parameters) contentTypeBase() string {
 	return base
 }
 
-func (c *Client) protocolBase(protocol string) string {
+func (c *Client) checkProtocol(protocol string) string {
 	if protocol == "" {
 		return defaultProtocol
 	}
 	return protocol
 }
 
-func (c *Client) portBase(port string) string {
+func (c *Client) checkPort(port string) string {
 	if port == "" {
 		return defaultPort
 	}
@@ -192,43 +265,30 @@ func (c *Client) portBase(port string) string {
 }
 
 // NewClient constructor with default values check
-func NewClient(host string, port string, protocol string, p Parameters) (*Client, error) {
+func NewClient(host string, port string, protocol string, p parameters) (*Client, error) {
 	var client Client
 
 	if host == "" {
 		return &client, fmt.Errorf("%s %w", "Host", ErrParamNotSet)
 	}
 
+	err := client.updateParameters(p)
+
+	if err != nil {
+		return &client, err
+	}
+
 	client = Client{
 		host:       host,
-		port:       client.portBase(port),
-		protocol:   client.protocolBase(protocol),
-		Parameters: p,
+		port:       client.checkPort(port),
+		protocol:   client.checkProtocol(protocol),
+		parameters: p,
 	}
 
-	if client.BaseURI == "" {
-		return &client, fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
-	}
-
-	if client.Resource == "" {
-		return &client, fmt.Errorf("%q: %w", "Resource", ErrParamNotSet)
-	}
-
-	// Check for setting parameters default value
-	client.ContentType = p.contentTypeBase()
-
-	//Set final uri connect string
-	client.uri = client.protocol + "://" + client.host + ":" + client.port + client.BaseURI + client.Resource + "/"
+	// Check for parameters default value
+	client.ContentType = p.checkContentType()
 
 	return &client, nil
-
-}
-
-func checkTimeout(timeout time.Duration) time.Duration {
-	if timeout == 0 {
-		return defaultTimeout
-	}
-	return timeout
 }
 
 // GetObjID is a support function extracting <id> out of JSON data

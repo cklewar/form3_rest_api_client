@@ -42,21 +42,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	createResp, err := c.Create(createInputData)
+	createResp, err := c.Create(createInputData, 0)
 	fmt.Println("Error: ", err)
 	fmt.Println("ResponseCode: ", createResp.Code)
 	data, err := client.JSONPrettyPrint(createResp.Body)
 	fmt.Println(data)
 
 	id, _ := client.GetObjID(createResp.Body)
-	fetchResp, err := c.Fetch(id)
+	fetchResp, err := c.Fetch(id, 0)
 	fmt.Println("Error: ", err)
 	fmt.Println("ResponseCode: ", fetchResp.Code)
 	data, err = client.JSONPrettyPrint(fetchResp.Body)
 	fmt.Println(data)
 
 	version, _ := client.GetObjVersion(createResp.Body)
-	deleteResp, err := c.Delete(id, version)
+	deleteResp, err := c.Delete(id, version, 0)
 	fmt.Println("Error: ", err)
 	fmt.Println("ResponseCode: ", deleteResp.Code)
 

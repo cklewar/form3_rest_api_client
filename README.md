@@ -98,26 +98,25 @@ Common operations regarding Form3 REST API are defined in __APIInterface__ inter
 ```go
 // APIInterface is a public interface
 type APIInterface interface {
-	Create(input []byte) (Response, error)
-	Delete(id string, version int) (Response, error)
-	Fetch(id string) (Response, error)
+	Create(input []byte, timeout time.Duration) (Response, error)
+	Delete(id string, version int, timeout time.Duration) (Response, error)
+	Fetch(id string, timeout time.Duration) (Response, error)
 }
 ```
 
 ## Parameters 
-Parameters are implemented as struct. Parameters struct defines mandatory fields to be used to generate URI for later use. Parameters struct and it's fields are kept public to allow later change of field values. 
+Parameters are implemented as struct. Parameters struct defines mandatory fields to be used to generate URI for later use. Parameters struct kept private. Changing 
+field values must be done through update methods. 
 
 ```go
-type Parameters struct {
-	Timeout     time.Duration // HTTP wait timeout. Default is time.Second * 10
-	BaseURI     string        // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!. Mandatrory field
-	ContentType string        // Header content type. Default is application/vnd.api+json
-	Resource    string        // API resource endpoint e.g. account, claims. Mandatory field
+type parameters struct {
+	BaseURI     string // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!. Mandatrory field
+	ContentType string // Header content type. Default is application/vnd.api+json
+	Resource    string // API resource endpoint e.g. account, claims. Mandatory field
 }
 ```
 
 ### Fields
-- __Timeout__ defines HTTP wait timeout for ```http.Client{}```
 -	__BaseURI__ defines base URI e.g. __/v1/organisation/__ or __/v1/transaction/payments__
 -	__ContentType__ defines request header content type e.g. __application/vnd.api+json__
 -	__Resource__ defines API resource endpoint e.g. __account__, __claims__
@@ -128,13 +127,12 @@ __BaseURI__ and __Resource__ are mandatory fields and do not provide default val
 Client API is implemented as struct embedding unnamed __Parameters__ struct. API client can be created using __NewClient()__ function. 
 
 ```go
-// Client is a struct which embeds Parameters
+// Client is a struct which embeds parameters struct (unnamed)
 type Client struct {
-	Parameters
+	parameters
 	protocol string // HTTP or HTTPS. Default is HTTP
 	host     string // IP or DNS name of target host. Mandatory field
 	port     string // TCP port number on target host. Default is 8080
-	uri      string // not public needs to be generated
 }
 ```
 
@@ -142,7 +140,6 @@ type Client struct {
 - __protocol__ defines protocol schema e.g. http or https        
 -	__host__ defines target IP or DNS name. This is the API server address
 -	__port__ defines targets TCP port number. This is the API service listening port
--	__uri__ defines final uri connection string. Intentionally not public needs to be generated
 
 Client struct implements __APIInterface__ interface.
 
