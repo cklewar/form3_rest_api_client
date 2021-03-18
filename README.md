@@ -20,12 +20,12 @@ Given the task client API should be
 following higher level technical descisions have been made:
 
 * Abstraction
-  * Hide complexity by abstraction. to achive this client library leverages on one hand side GO specific language constructs like method receivers, structs and interfaces on the other hand side well thought over implementation strategy. 
+  * Hide complexity by introducing abstraction. To achive this client library leverages GO language specific constructs like method receivers, structs and interfaces plus a well thought over implementation. 
 * Usage
-  * Client library should be as easy as possible to use. To achive this client library introduces client initilizer function. 
+  * Client library should be as easy as possible to use. To achive this client library introduces client initilizer function
   * The initilaizer function has been build in a way to support reusable client "instance" 
   * User will define API server specific parameters like IP, port and protocol schema only once through entire API server usage
-  * User defines more "variable" parameters like a __resource__ or a __base uri__ which can be changed any time through entire API server usage
+  * User defines more `variable` parameters within __parameters__ struct. More `variable` parameters for example are a __resource__ or a __base uri__  which can be changed any time through entire API server usage
   * The library makes usage of default values whenever it makes sense and possible. 
 * Extendability
   * Client library should be extendabale. To achive this client library introduces proper API interface

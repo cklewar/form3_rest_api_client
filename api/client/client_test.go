@@ -7,7 +7,8 @@ import (
 	"testing"
 )
 
-const apiHost = "accountapi"
+const host string = "accountapi"
+const accountID string = "de37f789-1604-7c5b-a1e5-3673ea9cc2db"
 
 /*func TestTableNewClient(t *testing.T) {
 
@@ -48,7 +49,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
-	c, _ := NewClient(apiHost, "", "", defaultParams)
+	c, _ := NewClient(host, "", "", defaultParams)
 	path := filepath.Join("../../examples/json/org_acc_create.json")
 	createInputData, err := ioutil.ReadFile(path)
 
@@ -64,82 +65,39 @@ func TestCreate(t *testing.T) {
 
 	if createResp.Code != http.StatusCreated {
 		t.Errorf("Error creating data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
-	}
-
-	id, _ := GetObjID(createResp.Body)
-	version, _ := GetObjVersion(createResp.Body)
-	deleteResp, err := c.Delete(id, version)
-
-	if deleteResp.Code != http.StatusNoContent {
-		t.Errorf("Error deleting data. Got response code %v expected %v", createResp.Code, http.StatusNoContent)
 	}
 }
 
 func TestFetch(t *testing.T) {
-	c, _ := NewClient(apiHost, "", "", defaultParams)
-	path := filepath.Join("../../examples/json/org_acc_create.json")
-	createInputData, err := ioutil.ReadFile(path)
+	c, _ := NewClient(host, "", "", defaultParams)
+	fetchResp, err := c.Fetch(accountID)
 
 	if err != nil {
-		t.Errorf("Error loading input data %v", err)
+		t.Errorf("Error fetching data %v", err)
 	}
-
-	createResp, err := c.Create(createInputData)
-
-	if err != nil {
-		t.Errorf("Error creating data %v", err)
-	}
-
-	if createResp.Code != http.StatusCreated {
-		t.Errorf("Error creating data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
-	}
-
-	id, _ := GetObjID(createResp.Body)
-	fetchResp, err := c.Fetch(id)
 
 	if fetchResp.Code != http.StatusOK {
-		t.Errorf("Error fetching data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
-	}
-
-	version, _ := GetObjVersion(createResp.Body)
-	deleteResp, err := c.Delete(id, version)
-
-	if deleteResp.Code != http.StatusNoContent {
-		t.Errorf("Error deleting data. Got response code %v expected %v", createResp.Code, http.StatusNoContent)
+		t.Errorf("Error fetching data. Got response code %v expected %v", fetchResp.Code, http.StatusOK)
 	}
 }
 
 func TestDelete(t *testing.T) {
-	c, _ := NewClient(apiHost, "", "", defaultParams)
-	path := filepath.Join("../../examples/json/org_acc_create.json")
-	createInputData, err := ioutil.ReadFile(path)
+	c, _ := NewClient(host, "", "", defaultParams)
+
+	deleteResp, err := c.Delete(accountID, 0)
 
 	if err != nil {
-		t.Errorf("Error loading input data %v", err)
+		t.Errorf("Error deleting data %v", err)
 	}
-
-	createResp, err := c.Create(createInputData)
-
-	if err != nil {
-		t.Errorf("Error creating data %v", err)
-	}
-
-	if createResp.Code != http.StatusCreated {
-		t.Errorf("Error creating data. Got response code %v expected %v", createResp.Code, http.StatusCreated)
-	}
-
-	id, _ := GetObjID(createResp.Body)
-	version, _ := GetObjVersion(createResp.Body)
-	deleteResp, err := c.Delete(id, version)
 
 	if deleteResp.Code != http.StatusNoContent {
-		t.Errorf("Error deleting data. Got response code %v expected %v", createResp.Code, http.StatusNoContent)
+		t.Errorf("Error deleting data. Got response code %v expected %v", deleteResp.Code, http.StatusNoContent)
 	}
 }
 
 func TestContentTypeBase(t *testing.T) {
 	// Construct client with default values
-	c, _ := NewClient(apiHost, "", "", defaultParams)
+	c, _ := NewClient(host, "", "", defaultParams)
 
 	if c.ContentType != defaultContentType {
 		t.Errorf("Wrong result. Got %s but wanted %s", c.ContentType, defaultContentType)
@@ -148,7 +106,7 @@ func TestContentTypeBase(t *testing.T) {
 
 func TestTimeoutBase(t *testing.T) {
 	// Construct client with default values
-	c, _ := NewClient(apiHost, "", "", defaultParams)
+	c, _ := NewClient(host, "", "", defaultParams)
 
 	if c.Timeout != defaultTimeout {
 		t.Errorf("Wrong result. Got %s but wanted %s", c.Timeout, defaultTimeout)
@@ -157,7 +115,7 @@ func TestTimeoutBase(t *testing.T) {
 
 func TestPortBase(t *testing.T) {
 	// Construct client with default values
-	c, _ := NewClient(apiHost, "", "", defaultParams)
+	c, _ := NewClient(host, "", "", defaultParams)
 
 	var port string = c.portBase("")
 	if port != defaultPort {
@@ -167,7 +125,7 @@ func TestPortBase(t *testing.T) {
 
 func TestProtocolBase(t *testing.T) {
 	// Construct client with default values
-	c, _ := NewClient(apiHost, "", "", defaultParams)
+	c, _ := NewClient(host, "", "", defaultParams)
 
 	var protocol string = c.protocolBase("")
 	if protocol != defaultProtocol {
