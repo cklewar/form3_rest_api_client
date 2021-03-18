@@ -26,19 +26,20 @@ const (
 // ErrParamNotSet is used when mandatory parameter not set
 var ErrParamNotSet = errors.New("parameter not set")
 
+//// HTTP wait timeout. Default is time.Second * 10
+
 // APIInterface is a public interface
 type APIInterface interface {
-	Create(input []byte) (Response, error)
-	Delete(id string, version int) (Response, error)
-	Fetch(id string) (Response, error)
+	Create(input []byte, timeout time.Duration) (Response, error)
+	Delete(id string, version int, timeout time.Duration) (Response, error)
+	Fetch(id string, timeout time.Duration) (Response, error)
 }
 
 // Parameters public structure
 type Parameters struct {
-	Timeout     time.Duration // HTTP wait timeout. Default is time.Second * 10
-	BaseURI     string        // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!. Mandatrory field
-	ContentType string        // Header content type. Default is application/vnd.api+json
-	Resource    string        // API resource endpoint e.g. account, claims. Mandatory field
+	BaseURI     string // base URI e.g. "/v1/organisation/", "/v1/transaction/". Need trailing slash!. Mandatrory field
+	ContentType string // Header content type. Default is application/vnd.api+json
+	Resource    string // API resource endpoint e.g. account, claims. Mandatory field
 }
 
 // Client is a struct which embeds Parameters
@@ -61,7 +62,7 @@ type Response struct {
 // Create (POST) a new ressource to <request.uri>.
 // Return tuple(<StatusCode>, <response Body>).
 // Return error
-func (c *Client) Create(input []byte) (Response, error) {
+func (c *Client) Create(input []byte, timeout time.Duration) (Response, error) {
 	response := Response{
 		Body: nil,
 		Code: -1,
@@ -75,7 +76,7 @@ func (c *Client) Create(input []byte) (Response, error) {
 	}
 
 	req.Header.Add("Content-type", c.ContentType)
-	client := &http.Client{Timeout: c.Timeout}
+	client := &http.Client{Timeout: checkTimeout(timeout)}
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -99,7 +100,7 @@ func (c *Client) Create(input []byte) (Response, error) {
 
 // Delete a resource by <id> and return StatusCode.
 // Return error. In case of error returned integer value < 0
-func (c *Client) Delete(id string, version int) (Response, error) {
+func (c *Client) Delete(id string, version int, timeout time.Duration) (Response, error) {
 	response := Response{
 		Body: nil,
 		Code: -1,
@@ -114,7 +115,7 @@ func (c *Client) Delete(id string, version int) (Response, error) {
 	}
 
 	req.Header.Add("Content-type", c.ContentType)
-	client := &http.Client{Timeout: c.Timeout}
+	client := &http.Client{Timeout: checkTimeout(timeout)}
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -130,7 +131,7 @@ func (c *Client) Delete(id string, version int) (Response, error) {
 // Fetch (GET) data from API. Parameter is a resource's <id>.
 // Return tuple(<StatusCode>, <response Body>).
 // Return error
-func (c *Client) Fetch(id string) (Response, error) {
+func (c *Client) Fetch(id string, timeout time.Duration) (Response, error) {
 	response := Response{
 		Body: nil,
 		Code: -1,
@@ -146,7 +147,7 @@ func (c *Client) Fetch(id string) (Response, error) {
 	}
 
 	req.Header.Add("Content-type", c.ContentType)
-	client := &http.Client{Timeout: c.Timeout}
+	client := &http.Client{Timeout: checkTimeout(timeout)}
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -172,14 +173,6 @@ func (p *Parameters) contentTypeBase() string {
 	base := p.ContentType
 	if p.ContentType == "" {
 		base = defaultContentType
-	}
-	return base
-}
-
-func (p *Parameters) timeoutBase() time.Duration {
-	base := p.Timeout
-	if p.Timeout == 0 {
-		base = defaultTimeout
 	}
 	return base
 }
@@ -222,7 +215,6 @@ func NewClient(host string, port string, protocol string, p Parameters) (*Client
 	}
 
 	// Check for setting parameters default value
-	client.Timeout = p.timeoutBase()
 	client.ContentType = p.contentTypeBase()
 
 	//Set final uri connect string
@@ -230,6 +222,13 @@ func NewClient(host string, port string, protocol string, p Parameters) (*Client
 
 	return &client, nil
 
+}
+
+func checkTimeout(timeout time.Duration) time.Duration {
+	if timeout == 0 {
+		return defaultTimeout
+	}
+	return timeout
 }
 
 // GetObjID is a support function extracting <id> out of JSON data
