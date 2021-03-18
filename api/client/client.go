@@ -169,7 +169,6 @@ func (c *Client) Fetch(id string) (Response, error) {
 
 // Default value checking methods
 func (p *Parameters) contentTypeBase() string {
-
 	base := p.ContentType
 	if p.ContentType == "" {
 		base = defaultContentType
