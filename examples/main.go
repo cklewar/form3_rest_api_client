@@ -63,6 +63,5 @@ func main() {
 	}
 
 	err = c.UpdateParameters(parameters)
-
 	fmt.Println("Error: ", err)
 }
