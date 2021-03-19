@@ -62,5 +62,7 @@ func main() {
 		Resource: "accounts",
 	}
 
-	c.UpdateParameters(parameters)
+	err = c.UpdateParameters(parameters)
+
+	fmt.Println("Error: ", err)
 }
