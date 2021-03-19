@@ -426,7 +426,7 @@ Type: accounts
 * Have tests that run from docker-compose up
 * Reviewers will run docker-compose up to assess if your tests pass
 
-Desicion has been made to use `golang:latest` debian based for testing instead of `golang:alpine` which has smaller image size but issues have been faced with missing libs regarding unit testing.
+Desicion has been made to use `golang:latest` debian based image for testing instead of `golang:alpine` which has smaller image size but issues have been faced with missing libs regarding unit testing.
 
 ## Unit
 Unit test coverage is not complete. Approach is to catch as many use cases / corner cases as possible. At least every function / method should be unit tested.
