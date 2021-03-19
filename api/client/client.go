@@ -57,58 +57,6 @@ type Response struct {
 	Code int
 }
 
-// UpdateParameters is ...
-func (c *Client) UpdateParameters(p Parameters) error {
-	err := c.UpdateBaseURI(p.BaseURI)
-
-	if err != nil {
-		return err
-	}
-
-	err = c.UpdateResource(p.Resource)
-
-	if err != nil {
-		return err
-	}
-
-	if p.ContentType == "" {
-		c.parameters.ContentType = defaultContentType
-	} else {
-		c.parameters.ContentType = p.ContentType
-	}
-
-	return nil
-}
-
-// UpdateBaseURI is ...
-func (c *Client) UpdateBaseURI(baseURI string) error {
-	if baseURI == "" {
-		return fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
-	}
-
-	c.parameters.BaseURI = baseURI
-	return nil
-}
-
-// UpdateResource is ...
-func (c *Client) UpdateResource(resource string) error {
-	if resource == "" {
-		return fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
-	}
-
-	c.parameters.Resource = resource
-	return nil
-}
-
-func (c *Client) updateURI() (string, error) {
-	if c.parameters.BaseURI != "" && c.parameters.Resource != "" {
-		//Set final uri connect string
-		uri := c.protocol + "://" + c.host + ":" + c.port + c.parameters.BaseURI + c.parameters.Resource + "/"
-		return uri, nil
-	}
-	return "", errors.New("Missing mandatory field")
-}
-
 // Create (POST) a new ressource to <request.uri>.
 // Return tuple(<StatusCode>, <response Body>).
 // Return error
@@ -234,6 +182,58 @@ func (c *Client) Fetch(id string, timeout time.Duration) (Response, error) {
 	response.Code = resp.StatusCode
 
 	return response, nil
+}
+
+// UpdateParameters is ...
+func (c *Client) UpdateParameters(p Parameters) error {
+	err := c.UpdateBaseURI(p.BaseURI)
+
+	if err != nil {
+		return err
+	}
+
+	err = c.UpdateResource(p.Resource)
+
+	if err != nil {
+		return err
+	}
+
+	if p.ContentType == "" {
+		c.parameters.ContentType = defaultContentType
+	} else {
+		c.parameters.ContentType = p.ContentType
+	}
+
+	return nil
+}
+
+// UpdateBaseURI is ...
+func (c *Client) UpdateBaseURI(baseURI string) error {
+	if baseURI == "" {
+		return fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
+	}
+
+	c.parameters.BaseURI = baseURI
+	return nil
+}
+
+// UpdateResource is ...
+func (c *Client) UpdateResource(resource string) error {
+	if resource == "" {
+		return fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet)
+	}
+
+	c.parameters.Resource = resource
+	return nil
+}
+
+func (c *Client) updateURI() (string, error) {
+	if c.parameters.BaseURI != "" && c.parameters.Resource != "" {
+		//Set final uri connect string
+		uri := c.protocol + "://" + c.host + ":" + c.port + c.parameters.BaseURI + c.parameters.Resource + "/"
+		return uri, nil
+	}
+	return "", fmt.Errorf("%q: %w", "BaseURI or Resource", ErrParamNotSet)
 }
 
 // Default value checking methods

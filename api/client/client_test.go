@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -43,6 +44,7 @@ var defaultParams Parameters = Parameters{
 }
 
 func TestNewClient(t *testing.T) {
+	// Construct client with host param not set
 	_, ok := NewClient("", "", "", defaultParams)
 	if ok == nil {
 		t.Errorf("Wrong result. Got nil but wanted error")
@@ -50,6 +52,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestCreate(t *testing.T) {
+	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 	path := filepath.Join("../../examples/json/org_acc_create.json")
 	createInputData, err := ioutil.ReadFile(path)
@@ -70,6 +73,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestFetch(t *testing.T) {
+	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 	fetchResp, err := c.Fetch(accountID, defaultTimeout)
 
@@ -83,6 +87,7 @@ func TestFetch(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 
 	deleteResp, err := c.Delete(accountID, 0, defaultTimeout)
@@ -96,7 +101,8 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestDoubleCreate(t *testing.T) {
+func TestCreateAlreadyCreated(t *testing.T) {
+	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 	path := filepath.Join("../../examples/json/org_acc_create.json")
 	createInputData, err := ioutil.ReadFile(path)
@@ -137,6 +143,7 @@ func TestDoubleCreate(t *testing.T) {
 }
 
 func TestFetchNotFound(t *testing.T) {
+	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 	fetchResp, err := c.Fetch(accountID, defaultTimeout)
 
@@ -149,12 +156,51 @@ func TestFetchNotFound(t *testing.T) {
 	}
 }
 
-func TestContentTypeBase(t *testing.T) {
+func TestUpdateParameters(t *testing.T) {
 	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
+	err := c.UpdateBaseURI(defaultParams.BaseURI)
 
-	if c.parameters.ContentType != defaultContentType {
-		t.Errorf("Wrong result. Got %s but wanted %s", c.parameters.ContentType, defaultContentType)
+	if err != nil {
+		t.Errorf("Error updating BaseURI %v", err)
+	}
+
+	err = c.UpdateResource(defaultParams.Resource)
+
+	if err != nil {
+		t.Errorf("Error updating Resource %v", err)
+	}
+}
+
+func TestUpdateBaseURI(t *testing.T) {
+	// Construct client with default values
+	c, _ := NewClient(host, "", "", defaultParams)
+	// Set mandatory BaseURI parameter to emtpty string
+	err := c.UpdateBaseURI("")
+	// Check error value
+	if err == nil {
+		t.Errorf("Error updating BaseURI. Got %v expected %v", err, fmt.Errorf("%q: %w", "BaseURI", ErrParamNotSet))
+	}
+}
+
+func TestUpdateResource(t *testing.T) {
+	// Construct client with default values
+	c, _ := NewClient(host, "", "", defaultParams)
+	// Set mandatory Resource parameter to emtpty string
+	err := c.UpdateResource("")
+	// Check error value
+	if err == nil {
+		t.Errorf("Error updating Resource. Got %v expected %v", err, fmt.Errorf("%q: %w", "Ressource", ErrParamNotSet))
+	}
+}
+
+func TestCheckContentType(t *testing.T) {
+	// Check empty string leads to default value set
+	if defaultParams.ContentType == "" {
+		ct := defaultParams.checkContentType()
+		if ct != defaultContentType {
+			t.Errorf("Wrong result. Got %s but wanted %s", ct, defaultContentType)
+		}
 	}
 }
 
@@ -167,7 +213,7 @@ func TestCheckTimeout(t *testing.T) {
 	}
 }
 
-func TestPortBase(t *testing.T) {
+func TestCheckPort(t *testing.T) {
 	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 
@@ -177,7 +223,7 @@ func TestPortBase(t *testing.T) {
 	}
 }
 
-func TestProtocolBase(t *testing.T) {
+func TestCheckProtocol(t *testing.T) {
 	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 
@@ -188,6 +234,7 @@ func TestProtocolBase(t *testing.T) {
 }
 
 func TestGetObjID(t *testing.T) {
+	// Construct client with default values
 	c, _ := NewClient(host, "", "", defaultParams)
 	path := filepath.Join("../../examples/json/org_acc_create.json")
 	createInputData, err := ioutil.ReadFile(path)
