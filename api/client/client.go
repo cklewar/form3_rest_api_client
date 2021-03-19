@@ -214,6 +214,7 @@ func (c *Client) UpdateBaseURI(baseURI string) error {
 	}
 
 	c.parameters.BaseURI = baseURI
+
 	return nil
 }
 

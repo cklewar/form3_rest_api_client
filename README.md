@@ -395,7 +395,7 @@ parameters = client.Parameters{
 err := c.UpdateParameters(parameters)
 ```
 
-Changing clients parameter values by accessing and assigning new values on client struct.
+Changing parameter values by calling according update function.
 
 ```go
 c.UpdateContentType("NEW CONTENT TYPE")
