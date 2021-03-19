@@ -26,8 +26,8 @@ const (
 // ErrParamNotSet is used when mandatory parameter not set
 var ErrParamNotSet = errors.New("parameter not set")
 
-// APIInterface is a public interface
-type APIInterface interface {
+// Operations is a public interface
+type Operations interface {
 	Create(input []byte, timeout time.Duration) (Response, error)
 	Delete(id string, version int, timeout time.Duration) (Response, error)
 	Fetch(id string, timeout time.Duration) (Response, error)
@@ -48,7 +48,7 @@ type Client struct {
 	port       string // TCP port number on target host. Default is 8080
 }
 
-var _ APIInterface = (*Client)(nil) // Verify that *Client implements APIInterface
+var _ Operations = (*Client)(nil) // Verify that *Client implements APIInterface
 //var _ Updater = (*Client)(nil)      // Verify that *Client implements Updater
 
 // Response is used to return API server body data and according http response code

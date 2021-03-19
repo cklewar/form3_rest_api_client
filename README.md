@@ -3,7 +3,7 @@
 - [Technical decisions](#technical-decisions)
 - [Requirements](#requirements)
 - [Implementation](#implementation)
-  - [APIInterface](#apiinterface)
+  - [Operations](#operations)
   - [Parameters](#parameters)
     - [Fields](#fields)
   - [Client](#client)
@@ -24,7 +24,7 @@
   - [Import client library](#import-client-library)
   - [Initialize parameters](#initialize-parameters)
   - [Create client](#create-client)
-  - [Operations](#operations)
+  - [Operations](#operations-1)
     - [Create](#create-1)
     - [Fetch](#fetch-1)
     - [Delete](#delete-1)
@@ -92,12 +92,12 @@ golang.org/x/tools v0.1.0 // indirect
 
 # Implementation
 
-## APIInterface
-Common operations regarding Form3 REST API are defined in __APIInterface__ interface. Type __Client__ therefore, is said to implement __APIInterface__ interface by implementing __APIInterface__ methods. In that light, __APIInterface__ interface enables us to compose custom types that have a common behavior.
+## Operations
+Common operations regarding Form3 REST API are defined in __Operations__ interface. Type __Client__ therefore, is said to implement __Operations__ interface by implementing __Operations__ methods. In that light, __Operations__ interface enables us to compose custom types that have a common behavior.
 
 ```go
-// APIInterface is a public interface
-type APIInterface interface {
+// Operations is a public interface
+type Operations interface {
 	Create(input []byte, timeout time.Duration) (Response, error)
 	Delete(id string, version int, timeout time.Duration) (Response, error)
 	Fetch(id string, timeout time.Duration) (Response, error)
@@ -129,11 +129,10 @@ Client API is of type struct embedding named __Parameters__ struct. API client c
 ```go
 // Client is a struct which embeds parameters struct (unnamed)
 type Client struct {
-	parameters
-	protocol string // HTTP or HTTPS. Default is HTTP
-	host     string // IP or DNS name of target host. Mandatory field
-	port     string // TCP port number on target host. Default is 8080
-}
+	parameters Parameters
+	protocol   string // HTTP or HTTPS. Default is HTTP
+	host       string // IP or DNS name of target host. Mandatory field
+	port       string // TCP port number on target host. Default is 8080
 ```
 
 ### Fields
@@ -142,10 +141,10 @@ type Client struct {
 -	__host__ defines target IP or DNS name. This is the API server address
 -	__port__ defines targets TCP port number. This is the API service listening port
 
-Client struct implements __APIInterface__ interface behaviour.
+Client struct implements __Operations__ interface behaviour.
 
 ```go
-var _ APIInterface = (*Client)(nil) // Verify that *Client implements APIInterface
+var _ Operations = (*Client)(nil) // Verify that *Client implements Operations
 ```
 
 ## Response
@@ -177,7 +176,7 @@ func NewClient(host string, port string, protocol string, p Parameters) (*Client
 ```
 
 __NewClient__ function returns initialized __Client__ and __error__. 
-__Client__ must implement __APIInterface__.
+__Client__ must implement __Operations__.
 
 ## Operation Methods
 
